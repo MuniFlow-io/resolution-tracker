@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "pages/api/resolution-cleaner/parse.ts": {
+      "maxDuration": 30
+    },
+    "pages/api/resolution-cleaner/replace.ts": {
+      "maxDuration": 30
+    }
+  }
+}

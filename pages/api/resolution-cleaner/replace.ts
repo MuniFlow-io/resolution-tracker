@@ -1,0 +1,116 @@
+import type { NextApiRequest, NextApiResponse } from "next";
+import { z } from "zod";
+import { withRequestId } from "@/lib/middleware/withRequestId";
+import { logger } from "@/lib/logger";
+import { parseDocx } from "@/lib/services/resolution-cleaner/parseDocx";
+import { applyReplacements } from "@/lib/services/resolution-cleaner/replacementEngine";
+import { assembleDocx } from "@/lib/services/resolution-cleaner/assembleDocx";
+import type {
+  ChangeLogEntry,
+  ConfirmedTerms,
+  ReplaceResult,
+  ServiceResult,
+} from "@/modules/resolution-cleaner/types/resolutionData";
+
+const schema = z.object({
+  rawFileBase64: z.string().min(1),
+  confirmedReplacements: z.array(
+    z.object({
+      group_id: z.string().uuid(),
+      original_value: z.string().min(1),
+      new_value: z.string().min(1),
+      confirmed_occurrence_offsets: z.array(
+        z.object({
+          start: z.number().int().min(0),
+          end: z.number().int().min(0),
+        }),
+      ),
+      term_key: z
+        .enum([
+          "borrower_name",
+          "lender_name",
+          "bond_counsel_name",
+          "series_name",
+          "unit_count_total",
+          "dated_date",
+        ])
+        .nullable(),
+    }),
+  ),
+});
+
+function buildConfirmedTerms(changeLog: ChangeLogEntry[]): ConfirmedTerms {
+  const terms: ConfirmedTerms = {};
+  for (const entry of changeLog) {
+    if (entry.term_key === "borrower_name") terms.borrower_name = entry.new_value;
+    if (entry.term_key === "lender_name") terms.lender_name = entry.new_value;
+    if (entry.term_key === "bond_counsel_name") terms.bond_counsel_name = entry.new_value;
+    if (entry.term_key === "series_name") terms.series_name = entry.new_value;
+    if (entry.term_key === "unit_count_total") {
+      const parsed = Number(entry.new_value);
+      terms.unit_count_total = Number.isFinite(parsed) ? parsed : undefined;
+    }
+    if (entry.term_key === "dated_date") terms.dated_date = entry.new_value;
+  }
+  return terms;
+}
+
+async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ServiceResult<ReplaceResult>>,
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ success: false, error: "Method not allowed" });
+  }
+
+  const validation = schema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ success: false, error: "Invalid request payload" });
+  }
+
+  try {
+    const { rawFileBase64, confirmedReplacements } = validation.data;
+    const fileBuffer = Buffer.from(rawFileBase64, "base64");
+    const parsed = parseDocx(fileBuffer);
+    const { modifiedXmlString, actualReplacementCounts } = applyReplacements(
+      parsed.runs,
+      parsed.xmlString,
+      parsed.flatText,
+      confirmedReplacements,
+    );
+
+    const updatedBuffer = assembleDocx(parsed.rawZip, modifiedXmlString);
+    const timestamp = new Date().toISOString();
+
+    const changeLog: ChangeLogEntry[] = confirmedReplacements.map((entry) => ({
+      original_value: entry.original_value,
+      new_value: entry.new_value,
+      replacement_count: actualReplacementCounts[entry.group_id] ?? 0,
+      term_key: entry.term_key,
+      timestamp,
+    }));
+
+    const confirmedTerms = buildConfirmedTerms(changeLog);
+
+    logger.info("Replacements applied", {
+      groupCount: confirmedReplacements.length,
+      totalOccurrences: changeLog.reduce((sum, item) => sum + item.replacement_count, 0),
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        updatedFileBase64: updatedBuffer.toString("base64"),
+        changeLog,
+        confirmedTerms,
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Replacement failed";
+    logger.error("Replacement failed", { error: message });
+    return res.status(409).json({ success: false, error: message });
+  }
+}
+
+export default withRequestId(handler);
+

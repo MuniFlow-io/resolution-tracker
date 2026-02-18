@@ -1,0 +1,41 @@
+{
+  "name": "resolution-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "npx ts-node --project tsconfig.test.json -r tsconfig-paths/register tests/services.test.ts"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "clsx": "^2.1.1",
+    "fast-xml-parser": "^4.5.3",
+    "formidable": "^3.5.4",
+    "lucide-react": "^0.562.0",
+    "next": "^15.1.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.2.0",
+    "uuid": "^11.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/formidable": "^3.4.6",
+    "@types/node": "^22.10.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "^15.1.6",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.2"
+  }
+}
