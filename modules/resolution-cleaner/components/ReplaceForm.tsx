@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import type { VariableGroupState } from "@/modules/resolution-cleaner/types/resolutionData";
 
@@ -24,24 +23,35 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
   const error = submitted && !value.trim() ? "Replacement value is required" : null;
 
   return (
-    <Card className="space-y-4 border-gray-700 bg-gray-950 p-4">
-      <div>
-        <p className="text-sm font-medium text-white">Replace: “{group.detected_value_raw}”</p>
-        <p className="mt-1 text-xs text-gray-400">
-          This will replace {activeCount} {activeCount === 1 ? "occurrence" : "occurrences"}.
-        </p>
-      </div>
+    <div className="space-y-3">
+      <p className="text-xs text-gray-400">
+        Will replace{" "}
+        <span className="font-medium text-white">
+          {activeCount} {activeCount === 1 ? "occurrence" : "occurrences"}
+        </span>
+      </p>
 
-      <div className="space-y-2">
-        <label htmlFor={`replacement-${group.group_id}`} className="text-xs text-gray-400">
+      <div className="space-y-1.5">
+        <label
+          htmlFor={`replacement-${group.group_id}`}
+          className="text-xs text-gray-400"
+        >
           Replace with
         </label>
         <Input
           id={`replacement-${group.group_id}`}
           value={value}
           hasError={!!error}
-          onChange={(event) => setValue(event.target.value)}
+          autoFocus
+          onChange={(e) => setValue(e.target.value)}
           onBlur={() => setSubmitted(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setSubmitted(true);
+              if (value.trim()) onConfirm(value.trim());
+            }
+            if (e.key === "Escape") onCancel();
+          }}
           placeholder="Enter the new value"
         />
         {error ? (
@@ -51,7 +61,7 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-wrap gap-2">
         <Button
           variant="primary"
           size="sm"
@@ -67,7 +77,6 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
           Cancel
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }
-
