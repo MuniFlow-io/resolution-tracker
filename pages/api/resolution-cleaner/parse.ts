@@ -5,6 +5,7 @@ import { withRequestId } from "@/lib/middleware/withRequestId";
 import { logger } from "@/lib/logger";
 import { parseDocx } from "@/lib/services/resolution-cleaner/parseDocx";
 import { detectVariables } from "@/lib/services/resolution-cleaner/detectVariables";
+import { generatePreviewHtml } from "@/lib/services/resolution-cleaner/generatePreviewHtml";
 import type { ParseResult, ServiceResult } from "@/modules/resolution-cleaner/types/resolutionData";
 
 export const config = {
@@ -52,6 +53,7 @@ async function handler(
     const fileBuffer = fs.readFileSync(fileItem.filepath);
     const parsed = parseDocx(fileBuffer);
     const variableGroups = detectVariables(parsed.flatText);
+    const previewHtml = await generatePreviewHtml(fileBuffer, variableGroups);
 
     logger.info("Resolution parsed", {
       fileName: fileItem.originalFilename,
@@ -64,6 +66,7 @@ async function handler(
         fileName: fileItem.originalFilename,
         variableGroups,
         rawFileBase64: fileBuffer.toString("base64"),
+        previewHtml,
       },
     });
   } catch (error) {

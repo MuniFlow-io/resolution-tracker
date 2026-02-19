@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -10,9 +9,11 @@ import { Spinner } from "@/components/ui/Spinner";
 import { ChangeLog } from "@/modules/resolution-cleaner/components/ChangeLog";
 import { VariableGroupList } from "@/modules/resolution-cleaner/components/VariableGroupList";
 import { UploadZone } from "@/modules/resolution-cleaner/components/UploadZone";
+import { DocumentPreviewIframe } from "@/modules/resolution-cleaner/components/DocumentPreviewIframe";
 import { useDocumentUpload } from "@/modules/resolution-cleaner/hooks/useDocumentUpload";
 import { useReplacement } from "@/modules/resolution-cleaner/hooks/useReplacement";
 import { useVariableGroups } from "@/modules/resolution-cleaner/hooks/useVariableGroups";
+import { useBiDirectionalSync } from "@/modules/resolution-cleaner/hooks/useBiDirectionalSync";
 
 function ParsingSkeleton({ label }: { label: string }) {
   return (
@@ -38,19 +39,14 @@ export default function ResolutionCleanerPage() {
   const upload = useDocumentUpload();
   const groups = useVariableGroups();
   const replacement = useReplacement();
-  const [replaceGroupId, setReplaceGroupId] = useState<string | null>(null);
-
-  /* ── Mutual exclusion: opening one panel closes the other ─── */
-  function handlePreview(groupId: string) {
-    setReplaceGroupId(null);
-    groups.setSelectedGroupId(groupId);
-    groups.setSelectedOccurrenceIndex(0);
-  }
-
-  function handleStartReplace(groupId: string) {
-    groups.setSelectedGroupId(null);
-    setReplaceGroupId(groupId);
-  }
+  
+  const sync = useBiDirectionalSync({
+    groups: groups.groups,
+    onIgnore: groups.ignoreGroup,
+    onUndo: groups.undoGroup,
+    setReplacementValue: groups.setReplacementValue,
+    confirmReplacement: groups.confirmGroupReplacement,
+  });
 
   /* ── File upload ─────────────────────────────────────────── */
   async function handleFileSelected(file: File) {
@@ -112,12 +108,14 @@ export default function ResolutionCleanerPage() {
     upload.resetUpload();
     replacement.resetReplacement();
     groups.setGroupsFromParse([]);
-    groups.setSelectedGroupId(null);
-    setReplaceGroupId(null);
+    sync.handleClosePanel();
   }
 
+  const isReviewMode = upload.step === "review" && upload.parseResult;
+  const isCompleteMode = upload.step === "complete";
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       {/* ── Back link ────────────────────────────────────────── */}
       <div className="mb-6">
         <Link
@@ -130,7 +128,7 @@ export default function ResolutionCleanerPage() {
       </div>
 
       {/* ── Page header ──────────────────────────────────────── */}
-      <header className="mb-8">
+      <header className="mb-8 max-w-3xl">
         <h1 className="text-2xl font-bold text-white sm:text-3xl">Resolution Cleaner</h1>
         <p className="mt-1 text-sm text-gray-400">
           Upload a resolution to detect and replace deal-specific variables.
@@ -139,58 +137,61 @@ export default function ResolutionCleanerPage() {
 
       {/* ── Step: upload ─────────────────────────────────────── */}
       {upload.step === "upload" ? (
-        <UploadZone onFileSelected={handleFileSelected} error={upload.error} />
+        <div className="max-w-3xl">
+          <UploadZone onFileSelected={handleFileSelected} error={upload.error} />
+        </div>
       ) : null}
 
       {/* ── Step: parsing skeleton ───────────────────────────── */}
       {upload.step === "parsing" ? (
-        <ParsingSkeleton label={`Parsing ${upload.parseResult?.fileName ?? "document"}…`} />
+        <div className="max-w-3xl">
+          <ParsingSkeleton label={`Parsing ${upload.parseResult?.fileName ?? "document"}…`} />
+        </div>
       ) : null}
 
-      {/* ── Step: review ─────────────────────────────────────── */}
-      {upload.step === "review" && upload.parseResult ? (
-        <>
+      {/* ── Step: review (Split Pane on Desktop) ─────────────── */}
+      {isReviewMode ? (
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,400px)_1fr]">
+          {/* Left Pane: The Hub (List & Controls) */}
           <div className="space-y-5">
-            {/* File summary */}
             <Card className="space-y-1">
-              <p className="text-sm font-medium text-gray-200">{upload.parseResult.fileName}</p>
+              <p className="text-sm font-medium text-gray-200">{upload.parseResult!.fileName}</p>
               <p className="text-xs text-gray-500">
                 {groups.groups.length} variable group{groups.groups.length !== 1 ? "s" : ""} detected
               </p>
             </Card>
 
-            {/* Variable group list — Preview and Replace panels render inline */}
             <VariableGroupList
               groups={groups.groups}
-              onPreview={handlePreview}
-              onStartReplace={handleStartReplace}
+              onPreview={sync.handleStartPreview}
+              onStartReplace={sync.handleStartReplace}
               onIgnore={(id) => groups.ignoreGroup(id)}
               onUndo={(id) => groups.undoGroup(id)}
-              previewGroupId={groups.selectedGroupId}
-              previewOccurrenceIndex={groups.selectedOccurrenceIndex}
-              onPreviewClose={() => groups.setSelectedGroupId(null)}
+              previewGroupId={sync.previewGroupId}
+              previewOccurrenceIndex={sync.activeOccurrenceIndex}
+              onPreviewClose={sync.handleClosePanel}
               onPreviewPrev={() =>
-                groups.setSelectedOccurrenceIndex(
-                  Math.max(0, groups.selectedOccurrenceIndex - 1),
+                sync.setActiveOccurrenceIndex(
+                  Math.max(0, sync.activeOccurrenceIndex - 1),
                 )
               }
               onPreviewNext={() => {
-                const grp = groups.groups.find((g) => g.group_id === groups.selectedGroupId);
+                const grp = groups.groups.find((g) => g.group_id === sync.previewGroupId);
                 if (!grp) return;
-                groups.setSelectedOccurrenceIndex(
-                  Math.min(grp.occurrences.length - 1, groups.selectedOccurrenceIndex + 1),
+                sync.setActiveOccurrenceIndex(
+                  Math.min(grp.occurrences.length - 1, sync.activeOccurrenceIndex + 1),
                 );
               }}
               onPreviewToggleExclude={(groupId, idx) =>
                 groups.toggleOccurrenceExcluded(groupId, idx)
               }
-              replaceGroupId={replaceGroupId}
+              replaceGroupId={sync.replaceGroupId}
               onReplaceConfirm={(groupId, value) => {
                 groups.setReplacementValue(groupId, value);
                 groups.confirmGroupReplacement(groupId);
-                setReplaceGroupId(null);
+                sync.handleClosePanel();
               }}
-              onReplaceCancel={() => setReplaceGroupId(null)}
+              onReplaceCancel={sync.handleClosePanel}
             />
 
             {/* Replacement API error */}
@@ -207,6 +208,7 @@ export default function ResolutionCleanerPage() {
                 size="md"
                 onClick={handleApplyAll}
                 disabled={groups.confirmedCount === 0 || replacement.isReplacing}
+                className="w-full"
               >
                 {replacement.isReplacing ? (
                   <>
@@ -221,6 +223,17 @@ export default function ResolutionCleanerPage() {
                 We only replace the exact text you confirm. We do not rewrite any language.
               </p>
             </div>
+          </div>
+
+          {/* Right Pane: Document Preview (Desktop only) */}
+          <div className="hidden lg:block h-[calc(100vh-200px)] sticky top-8">
+             <DocumentPreviewIframe 
+               html={upload.parseResult!.previewHtml}
+               activeGroupId={sync.activeGroupId}
+               activeOccurrenceIndex={sync.activeOccurrenceIndex}
+               onHighlightClick={sync.handleHighlightClick}
+               replacements={sync.confirmedReplacements}
+             />
           </div>
 
           {/* Apply button — mobile sticky bar */}
@@ -248,17 +261,19 @@ export default function ResolutionCleanerPage() {
 
           {/* Bottom padding so sticky bar doesn't cover last item on mobile */}
           <div className="h-24 sm:hidden" aria-hidden="true" />
-        </>
+        </div>
       ) : null}
 
       {/* ── Step: replacing skeleton ──────────────────────────── */}
       {upload.step === "replacing" ? (
-        <ParsingSkeleton label="Applying replacements…" />
+        <div className="max-w-3xl">
+          <ParsingSkeleton label="Applying replacements…" />
+        </div>
       ) : null}
 
       {/* ── Step: complete ───────────────────────────────────── */}
-      {upload.step === "complete" ? (
-        <div className="space-y-5">
+      {isCompleteMode ? (
+        <div className="max-w-3xl space-y-5">
           <Card className="space-y-3 border-green-800/40 bg-green-950/10">
             <p className="text-sm font-medium text-green-300">Complete</p>
             <p className="text-sm text-gray-300">
