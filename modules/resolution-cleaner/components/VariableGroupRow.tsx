@@ -67,28 +67,36 @@ export function VariableGroupRow({
         </div>
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={onPreview}
-            aria-label={`Preview occurrences of ${group.detected_value_raw}`}>
-            Preview
-          </Button>
-          {group.action === "done" ? (
+          {group.action === "ignored" ? (
             <Button variant="ghost" size="sm" onClick={onUndo}>
-              Undo
+              Undo Ignore
             </Button>
           ) : (
-            <Button variant="secondary" size="sm" onClick={onStartReplace}
-              aria-label={`Replace ${group.detected_value_raw}`}>
-              Replace
-            </Button>
+            <>
+              <Button variant="secondary" size="sm" onClick={onPreview}
+                aria-label={`Preview occurrences of ${group.detected_value_raw}`}>
+                Preview
+              </Button>
+              {group.action === "done" ? (
+                <Button variant="ghost" size="sm" onClick={onUndo}>
+                  Undo
+                </Button>
+              ) : (
+                <Button variant="secondary" size="sm" onClick={onStartReplace}
+                  aria-label={`Replace ${group.detected_value_raw}`}>
+                  Replace
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onIgnore}
+                className="text-gray-400 hover:text-white"
+              >
+                Ignore
+              </Button>
+            </>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onIgnore}
-            className="text-gray-400 hover:text-white"
-          >
-            Ignore
-          </Button>
         </div>
       )}
 

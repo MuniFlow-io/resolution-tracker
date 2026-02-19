@@ -72,20 +72,24 @@ export function DocumentPreviewIframe({
             }
 
             if (data.type === 'APPLY_REPLACEMENTS') {
-              // Apply live text updates to the HTML based on confirmed replacements
+              // The incoming replacements object maps groupId -> newValue
+              const currentReplacements = data.replacements || {};
+              
+              // Apply live text updates to all marks
               marks.forEach(mark => {
                 const groupId = mark.getAttribute('data-group-id');
                 if (!groupId) return;
                 
-                const newValue = data.replacements[groupId];
-                if (newValue) {
+                const newValue = currentReplacements[groupId];
+                if (newValue !== undefined) {
+                  // We have a confirmed replacement
                   mark.classList.add('confirmed');
                   mark.textContent = newValue;
                 } else {
-                  // Revert to original if replacement was undone
+                  // We don't have a confirmed replacement (could be pending or just undone)
                   mark.classList.remove('confirmed');
-                  // We stored the original escaped text in data-original during HTML generation
-                  // Unescape the backslash-escaped characters (like \$ -> $)
+                  
+                  // Restore the original text
                   const original = mark.getAttribute('data-original');
                   if (original) {
                      mark.textContent = original.replace(/\\\\([.*+?^$\\{}()|[\\]\\\\])/g, '$1');
