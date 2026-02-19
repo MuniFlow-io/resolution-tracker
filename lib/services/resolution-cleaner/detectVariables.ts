@@ -5,10 +5,19 @@ import type {
   VariableGroup,
 } from "@/modules/resolution-cleaner/types/resolutionData";
 
+function stripXmlFragments(s: string): string {
+  // Remove XML/HTML-like tags that can appear in flatText when a docx <w:t> node
+  // contains entity-encoded angle brackets (e.g. &lt;wtrPr&gt;). These are artifacts
+  // of the document XML structure and are meaningless to the user.
+  return s.replace(/<[^>]{0,300}>/g, " ").replace(/\s{2,}/g, " ");
+}
+
 function buildContext(text: string, start: number, end: number) {
+  const before = text.slice(Math.max(0, start - 60), start);
+  const after = text.slice(end, Math.min(text.length, end + 60));
   return {
-    context_before: text.slice(Math.max(0, start - 60), start),
-    context_after: text.slice(end, Math.min(text.length, end + 60)),
+    context_before: stripXmlFragments(before),
+    context_after: stripXmlFragments(after),
   };
 }
 

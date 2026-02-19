@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +14,8 @@ interface VariableGroupRowProps {
   onStartReplace: () => void;
   onIgnore: () => void;
   onUndo: () => void;
+  /** Rendered inline below the action buttons — PreviewPanel or ReplaceForm. */
+  panelSlot?: ReactNode;
 }
 
 function rowClass(group: VariableGroupState): string {
@@ -28,11 +31,13 @@ export function VariableGroupRow({
   onStartReplace,
   onIgnore,
   onUndo,
+  panelSlot,
 }: VariableGroupRowProps) {
   const activeCount = group.occurrenceStates.filter((o) => o.status !== "excluded").length;
 
   return (
-    <Card className={cn("space-y-3 p-4", rowClass(group))}>
+    <Card className={cn("p-4", rowClass(group))}>
+      {/* ── Header row ─────────────────────────────────── */}
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
           <p
@@ -54,36 +59,53 @@ export function VariableGroupRow({
         </Badge>
       </div>
 
+      {/* ── Action buttons ─────────────────────────────── */}
       {group.is_locked ? (
-        <div className="flex items-center gap-2 text-xs text-amber-300">
+        <div className="mt-3 flex items-center gap-2 text-xs text-amber-300">
           <Lock className="h-3.5 w-3.5" aria-hidden="true" />
           Locked anchor — display only
         </div>
       ) : (
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button variant="secondary" size="sm" onClick={onPreview}>
-            Preview
-          </Button>
-          {group.action === "done" ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {group.action === "ignored" ? (
             <Button variant="ghost" size="sm" onClick={onUndo}>
-              Undo
+              Undo Ignore
             </Button>
           ) : (
-            <Button variant="secondary" size="sm" onClick={onStartReplace}>
-              Replace
-            </Button>
+            <>
+              <Button variant="secondary" size="sm" onClick={onPreview}
+                aria-label={`Preview occurrences of ${group.detected_value_raw}`}>
+                Preview
+              </Button>
+              {group.action === "done" ? (
+                <Button variant="ghost" size="sm" onClick={onUndo}>
+                  Undo
+                </Button>
+              ) : (
+                <Button variant="secondary" size="sm" onClick={onStartReplace}
+                  aria-label={`Replace ${group.detected_value_raw}`}>
+                  Replace
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onIgnore}
+                className="text-gray-400 hover:text-white"
+              >
+                Ignore
+              </Button>
+            </>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onIgnore}
-            className="text-gray-400 hover:text-white"
-          >
-            Ignore
-          </Button>
         </div>
       )}
+
+      {/* ── Inline panel (Preview or Replace) ──────────── */}
+      {panelSlot ? (
+        <div className="-mx-4 mt-3 border-t border-gray-700/60 px-4 pt-4">
+          {panelSlot}
+        </div>
+      ) : null}
     </Card>
   );
 }
-

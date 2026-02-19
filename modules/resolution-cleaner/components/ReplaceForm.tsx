@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import type { VariableGroupState } from "@/modules/resolution-cleaner/types/resolutionData";
 
@@ -12,9 +11,45 @@ interface ReplaceFormProps {
   onConfirm: (value: string) => void;
 }
 
+function formatCurrencyInput(val: string): string {
+  // If it's empty, don't format
+  if (!val.trim()) return val;
+  
+  // Remove all non-numeric characters (including existing $ and commas)
+  const numericStr = val.replace(/[^0-9.]/g, "");
+  
+  // If no numbers found, return original string (maybe they typed "TBD")
+  if (!numericStr) return val;
+
+  // Split integer and decimal parts
+  const [integer, decimal] = numericStr.split(".");
+  
+  // Format the integer part with commas
+  const formattedInteger = integer.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");
+  
+  // Reconstruct with $ and optional decimal
+  if (decimal !== undefined) {
+    return `$${formattedInteger}.${decimal.slice(0, 2)}`;
+  }
+  return `$${formattedInteger}`;
+}
+
 export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
   const [value, setValue] = useState(group.replacement_value ?? "");
   const [submitted, setSubmitted] = useState(false);
+
+  // If this is a currency group, we want to auto-format on blur or enter
+  const handleFormatAndConfirm = (val: string) => {
+    let finalValue = val.trim();
+    if (group.type === "currency") {
+      finalValue = formatCurrencyInput(finalValue);
+      setValue(finalValue);
+    }
+    
+    if (finalValue) {
+      onConfirm(finalValue);
+    }
+  };
 
   const activeCount = useMemo(
     () => group.occurrenceStates.filter((item) => item.status !== "excluded").length,
@@ -24,24 +59,40 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
   const error = submitted && !value.trim() ? "Replacement value is required" : null;
 
   return (
-    <Card className="space-y-4 border-gray-700 bg-gray-950 p-4">
-      <div>
-        <p className="text-sm font-medium text-white">Replace: “{group.detected_value_raw}”</p>
-        <p className="mt-1 text-xs text-gray-400">
-          This will replace {activeCount} {activeCount === 1 ? "occurrence" : "occurrences"}.
-        </p>
-      </div>
+    <div className="space-y-3">
+      <p className="text-xs text-gray-400">
+        Will replace{" "}
+        <span className="font-medium text-white">
+          {activeCount} {activeCount === 1 ? "occurrence" : "occurrences"}
+        </span>
+      </p>
 
-      <div className="space-y-2">
-        <label htmlFor={`replacement-${group.group_id}`} className="text-xs text-gray-400">
+      <div className="space-y-1.5">
+        <label
+          htmlFor={`replacement-${group.group_id}`}
+          className="text-xs text-gray-400"
+        >
           Replace with
         </label>
         <Input
           id={`replacement-${group.group_id}`}
           value={value}
           hasError={!!error}
-          onChange={(event) => setValue(event.target.value)}
-          onBlur={() => setSubmitted(true)}
+          autoFocus
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={() => {
+            setSubmitted(true);
+            if (group.type === "currency" && value.trim()) {
+               setValue(formatCurrencyInput(value.trim()));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setSubmitted(true);
+              handleFormatAndConfirm(value);
+            }
+            if (e.key === "Escape") onCancel();
+          }}
           placeholder="Enter the new value"
         />
         {error ? (
@@ -51,14 +102,14 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-wrap gap-2">
         <Button
           variant="primary"
           size="sm"
           onClick={() => {
             setSubmitted(true);
             if (!value.trim()) return;
-            onConfirm(value.trim());
+            handleFormatAndConfirm(value);
           }}
         >
           Confirm Replacement
@@ -67,7 +118,6 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
           Cancel
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }
-

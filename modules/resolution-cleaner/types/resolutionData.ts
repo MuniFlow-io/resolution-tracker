@@ -54,6 +54,7 @@ export interface ParseResult {
   fileName: string;
   variableGroups: VariableGroup[];
   rawFileBase64: string;
+  previewHtml: string;
 }
 
 export interface ConfirmedReplacement {
