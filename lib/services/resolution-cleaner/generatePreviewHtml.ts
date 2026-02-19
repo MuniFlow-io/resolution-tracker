@@ -39,7 +39,7 @@ export async function generatePreviewHtml(
     const safeRegex = new RegExp(`(${escapedText})(?![^<]*>)`, "g");
 
     // We use a custom attribute data-group-id to link the mark to the VariableGroup
-    const replacement = `<mark data-group-id="${group.group_id}" data-type="${group.type}">${rawText}</mark>`;
+    const replacement = `<mark data-group-id="${group.group_id}" data-type="${group.type}" data-original="${escapedText}">${rawText}</mark>`;
     html = html.replace(safeRegex, replacement);
   }
 
@@ -57,37 +57,43 @@ export async function generatePreviewHtml(
       
       /* Base mark style (pending) */
       mark {
-        background-color: #fef08a; /* yellow-200 */
-        color: #854d0e; /* yellow-800 */
+        background-color: transparent;
+        color: #1f2937; /* inherit text color */
         padding: 0 2px;
         border-radius: 2px;
         cursor: pointer;
         transition: all 0.2s ease;
-        border: 1px solid #eab308; /* yellow-500 */
+        border: 1px dashed #d1d5db; /* gray-300 */
       }
       
       mark:hover {
-        background-color: #fde047; /* yellow-300 */
+        background-color: #f3f4f6; /* gray-100 */
+        border-style: solid;
       }
 
       /* Locked (Issuer) */
       mark[data-type="issuer"] {
-        background-color: #ffedd5; /* amber-200 */
-        color: #9a3412; /* amber-800 */
-        border-color: #f59e0b; /* amber-500 */
+        border-color: #fbd38d; /* orange-200 */
+        background-color: #fffaf0; /* orange-50 */
         cursor: default;
       }
 
-      /* Confirmed (handled dynamically by frontend script injected later, but we provide the class) */
+      /* Confirmed */
       mark.confirmed {
-        background-color: #bbf7d0 !important; /* green-200 */
+        background-color: #dcfce7 !important; /* green-100 */
         color: #166534 !important; /* green-800 */
-        border-color: #22c55e !important; /* green-500 */
+        border: 1px solid #4ade80 !important; /* green-400 */
       }
 
-      /* Active / Focused */
+      /* Active / Focused (The one currently being previewed or replaced) */
       mark.active {
+        background-color: #fef08a !important; /* yellow-200 */
+        color: #854d0e !important; /* yellow-800 */
+        border: 2px solid #eab308 !important; /* yellow-500 */
         box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.3);
+        font-weight: 600;
+        z-index: 10;
+        position: relative;
       }
     </style>
   `;

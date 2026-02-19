@@ -84,13 +84,12 @@ export function DocumentPreviewIframe({
                 } else {
                   // Revert to original if replacement was undone
                   mark.classList.remove('confirmed');
-                  // We need the original text back. We didn't store it on the mark in HTML generation,
-                  // but we know it's the raw text that matched. Wait, we should have stored it.
-                  // For now, if no replacement, we don't know the original text easily unless we 
-                  // pass it in. We'll pass a 'revert' map in the future if needed, or just 
-                  // re-render the iframe when replacements change significantly.
-                  // Actually, it's safer to just set the HTML fresh if we need to revert everything,
-                  // but for live typing, we'll just update it.
+                  // We stored the original escaped text in data-original during HTML generation
+                  // Unescape the backslash-escaped characters (like \$ -> $)
+                  const original = mark.getAttribute('data-original');
+                  if (original) {
+                     mark.textContent = original.replace(/\\\\([.*+?^$\\{}()|[\\]\\\\])/g, '$1');
+                  }
                 }
               });
             }
