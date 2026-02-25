@@ -76,7 +76,7 @@ test("Regex: series matches hyphenated and non-hyphenated", () => {
 
 test("Regex: borrower anchor extracts entity name", () => {
   const { BORROWER_ANCHOR_REGEX } = require("../lib/services/resolution-cleaner/regexPatterns");
-  const text = `Balboa Lee Avenue, L.P. (the "Borrower")`;
+  const text = `to Balboa Lee Avenue, L.P., a California limited partnership (the "Borrower")`;
   BORROWER_ANCHOR_REGEX.lastIndex = 0;
   const m = BORROWER_ANCHOR_REGEX.exec(text);
   assert.ok(m, "Should match borrower pattern");
@@ -102,7 +102,7 @@ test("detectVariables: groups exact string matches", () => {
     This resolution dated September 1, 2024 and September 1, 2024 again.
     The amount is $84,116,000 and $5,000,000.
     Series 2024-A bonds.
-    Balboa Lee Avenue, L.P. (the "Borrower").
+    to Balboa Lee Avenue, L.P., a California limited partnership (the "Borrower").
     127-unit residential project.
   `;
 
@@ -159,6 +159,20 @@ test("detectVariables: does NOT detect borrower without anchor", () => {
   const borrowers = groups.filter((g: { type: string }) => g.type === "borrower");
   assert.equal(borrowers.length, 0, "Should NOT detect borrower without anchor");
   pass("No anchor → no borrower detection");
+});
+
+test("detectVariables: strips truncated XML fragments from preview context", () => {
+  const { detectVariables } = require("../lib/services/resolution-cleaner/detectVariables");
+  const text = `Series 2025F <w:wAfter w:w="278" w:type="dxa" continued text`;
+  const groups = detectVariables(text);
+  const series = groups.find((g: { type: string }) => g.type === "series");
+  assert.ok(series, "Should detect series");
+  const occurrence = series.occurrences[0];
+  assert.ok(
+    !occurrence.context_after.includes("<w:wAfter"),
+    "Context should remove truncated XML fragments",
+  );
+  pass("Truncated XML fragments are removed from context");
 });
 
 // ─── 3. replacementEngine ────────────────────────────────────────────────────

@@ -40,7 +40,8 @@ export function useBiDirectionalSync({
   }, []);
 
   const handleClosePanel = useCallback(() => {
-    setActiveGroupId(null);
+    // Keep the active group/occurrence focused in the document preview.
+    // Closing a panel should only close the UI panel, not reset navigation.
     setActivePanelType(null);
   }, []);
 

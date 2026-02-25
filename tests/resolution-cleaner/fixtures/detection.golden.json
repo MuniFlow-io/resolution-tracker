@@ -1,0 +1,38 @@
+[
+  {
+    "type": "date",
+    "value": "September 1, 2024",
+    "count": 1,
+    "offsets": [[396, 413]]
+  },
+  {
+    "type": "currency",
+    "value": "$84,116,000",
+    "count": 1,
+    "offsets": [[378, 389]]
+  },
+  {
+    "type": "borrower",
+    "value": "Balboa Lee Avenue, L.P.",
+    "count": 1,
+    "offsets": [[4, 27]]
+  },
+  {
+    "type": "funding_lender",
+    "value": "Acme Capital Partners, LLC",
+    "count": 1,
+    "offsets": [[95, 121]]
+  },
+  {
+    "type": "project_name",
+    "value": "Sunset Gardens Apartments",
+    "count": 1,
+    "offsets": [[215, 240]]
+  },
+  {
+    "type": "property_address",
+    "value": "123 Main Street, San Diego, California 92101",
+    "count": 1,
+    "offsets": [[308, 352]]
+  }
+]

@@ -11,44 +11,14 @@ interface ReplaceFormProps {
   onConfirm: (value: string) => void;
 }
 
-function formatCurrencyInput(val: string): string {
-  // If it's empty, don't format
-  if (!val.trim()) return val;
-  
-  // Remove all non-numeric characters (including existing $ and commas)
-  const numericStr = val.replace(/[^0-9.]/g, "");
-  
-  // If no numbers found, return original string (maybe they typed "TBD")
-  if (!numericStr) return val;
-
-  // Split integer and decimal parts
-  const [integer, decimal] = numericStr.split(".");
-  
-  // Format the integer part with commas
-  const formattedInteger = integer.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");
-  
-  // Reconstruct with $ and optional decimal
-  if (decimal !== undefined) {
-    return `$${formattedInteger}.${decimal.slice(0, 2)}`;
-  }
-  return `$${formattedInteger}`;
-}
-
 export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
   const [value, setValue] = useState(group.replacement_value ?? "");
   const [submitted, setSubmitted] = useState(false);
 
-  // If this is a currency group, we want to auto-format on blur or enter
-  const handleFormatAndConfirm = (val: string) => {
-    let finalValue = val.trim();
-    if (group.type === "currency") {
-      finalValue = formatCurrencyInput(finalValue);
-      setValue(finalValue);
-    }
-    
-    if (finalValue) {
-      onConfirm(finalValue);
-    }
+  const handleConfirm = (val: string) => {
+    if (!val.trim()) return;
+    // Preserve literal user input exactly, including punctuation/spacing.
+    onConfirm(val);
   };
 
   const activeCount = useMemo(
@@ -82,14 +52,11 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
           onChange={(e) => setValue(e.target.value)}
           onBlur={() => {
             setSubmitted(true);
-            if (group.type === "currency" && value.trim()) {
-               setValue(formatCurrencyInput(value.trim()));
-            }
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               setSubmitted(true);
-              handleFormatAndConfirm(value);
+              handleConfirm(value);
             }
             if (e.key === "Escape") onCancel();
           }}
@@ -109,7 +76,7 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
           onClick={() => {
             setSubmitted(true);
             if (!value.trim()) return;
-            handleFormatAndConfirm(value);
+            handleConfirm(value);
           }}
         >
           Confirm Replacement

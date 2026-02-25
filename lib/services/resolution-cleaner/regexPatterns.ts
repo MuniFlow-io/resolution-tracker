@@ -6,14 +6,20 @@ export const CURRENCY_REGEX = /\$\d{1,3}(?:,\d{3})+(?!\d)/g;
 export const SERIES_HYPHEN_REGEX = /\bSeries\s+\d{4}-[A-Z]{1,3}\b/gi;
 export const SERIES_NOHYPHEN_REGEX = /\bSeries\s+\d{4}[A-Z]{1,3}\b/gi;
 export const BORROWER_ANCHOR_REGEX =
-  /([A-Z][A-Za-z0-9\s,.'&-]{2,120}?)\s*\(\s*the\s+"Borrower"\s*\)/g;
+  /\b(?:to|by|from|of)\s+(.{2,120}?)\s*(?:,\s*(?:a|an)\s+[^()]{0,120})?\s*\(the\s+[“"]Borrower[”"]\)/gi;
 export const FUNDING_LENDER_ANCHOR_REGEX =
-  /([A-Z][A-Za-z0-9\s,.'&-]{2,120}?)\s*\(\s*the\s+"Funding Lender"\s*\)/g;
+  /\b(.{2,120}?)\s*\(or\s+an\s+affiliate\s+thereof\)\s*\(the\s+[“"]Funding\s+Lender[”"]\)/gi;
+export const FUNDING_LENDER_FALLBACK_REGEX =
+  /\b([^()\n]{2,120}?)\s*\(the\s+[“"]Funding\s+Lender[”"]\)/gi;
+export const PROJECT_KNOWN_AS_REGEX =
+  /\bknown\s+as\s+[“"]([^”"]{2,120})[”"](?:\s*\(the\s+[“"]Project[”"]\))?/gi;
+export const ADDRESS_LOCATED_AT_REGEX =
+  /\b(?:to\s+be\s+)?(?:is\s+|will\s+be\s+)?located\s+at\s+([^.;\n]{8,200})/gi;
 export const BOND_COUNSEL_ANCHOR_REGEX =
-  /([A-Z][A-Za-z0-9\s,.'&-]{2,120}?)\s*(?:\(\s*"Bond Counsel"\s*\)|as\s+bond\s+counsel)/gi;
+  /([A-Z][A-Za-z0-9 ,.'&-]{2,120}?)\s*(?:\(\s*"Bond Counsel"\s*\)|as\s+bond\s+counsel)/gi;
 export const UNIT_COUNT_REGEX = /\b(\d+)-unit\b/gi;
 export const ISSUER_ANCHOR_REGEX =
-  /([A-Z][A-Za-z0-9\s,.'&-]{2,120}?)\s*\(\s*the\s+"(?:City|Issuer)"\s*\)/g;
+  /([A-Z][A-Za-z0-9 ,.'&-]{2,120}?)\s*\(\s*the\s+"(?:City|Issuer)"\s*\)/g;
 
 export const PATTERN_REGISTRY = [
   { type: "date" as const, regex: LONG_DATE_REGEX, term_key: null, is_locked: false },
@@ -41,6 +47,24 @@ export const PATTERN_REGISTRY = [
     type: "funding_lender" as const,
     regex: FUNDING_LENDER_ANCHOR_REGEX,
     term_key: "lender_name" as const,
+    is_locked: false,
+  },
+  {
+    type: "funding_lender" as const,
+    regex: FUNDING_LENDER_FALLBACK_REGEX,
+    term_key: "lender_name" as const,
+    is_locked: false,
+  },
+  {
+    type: "project_name" as const,
+    regex: PROJECT_KNOWN_AS_REGEX,
+    term_key: null,
+    is_locked: false,
+  },
+  {
+    type: "property_address" as const,
+    regex: ADDRESS_LOCATED_AT_REGEX,
+    term_key: null,
     is_locked: false,
   },
   {
