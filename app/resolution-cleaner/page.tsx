@@ -118,8 +118,6 @@ export default function ResolutionCleanerPage() {
   const isReviewMode = upload.step === "review" && upload.parseResult;
   const isCompleteMode = upload.step === "complete";
   const actionableGroups = groups.groups.filter((group) => !group.is_locked);
-  const confirmedGroups = actionableGroups.filter((group) => group.action === "done");
-  const ignoredGroups = actionableGroups.filter((group) => group.action === "ignored");
   const unresolvedGroups = actionableGroups
     .filter((group) => group.action !== "done" && group.action !== "ignored")
     .sort(
@@ -144,16 +142,6 @@ export default function ResolutionCleanerPage() {
 
   function focusPreviewPane() {
     previewContainerRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
-  }
-
-  function jumpToNextUnresolved() {
-    if (unresolvedGroups.length === 0) return;
-    const ids = unresolvedGroups.map((group) => group.group_id);
-    const currentIndex = sync.activeGroupId ? ids.indexOf(sync.activeGroupId) : -1;
-    const nextId = ids[(currentIndex + 1) % ids.length];
-    sync.handleStartPreview(nextId);
-    sync.setActiveOccurrenceIndex(0);
-    focusPreviewPane();
   }
 
   function handleNavigatorSelect(groupId: string) {
@@ -232,18 +220,10 @@ export default function ResolutionCleanerPage() {
             <div className="space-y-4">
               <Card className="space-y-3">
                 <p className="text-sm font-medium text-gray-200">{upload.parseResult!.fileName}</p>
-                <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="rounded-md border border-gray-800 bg-gray-900/50 px-2 py-1.5">
                     <p className="text-gray-400">Detected</p>
                     <p className="font-medium text-white">{actionableGroups.length}</p>
-                  </div>
-                  <div className="rounded-md border border-gray-800 bg-gray-900/50 px-2 py-1.5">
-                    <p className="text-gray-400">Confirmed</p>
-                    <p className="font-medium text-green-300">{confirmedGroups.length}</p>
-                  </div>
-                  <div className="rounded-md border border-gray-800 bg-gray-900/50 px-2 py-1.5">
-                    <p className="text-gray-400">Ignored</p>
-                    <p className="font-medium text-gray-300">{ignoredGroups.length}</p>
                   </div>
                   <div className="rounded-md border border-gray-800 bg-gray-900/50 px-2 py-1.5">
                     <p className="text-gray-400">Remaining</p>
@@ -253,7 +233,7 @@ export default function ResolutionCleanerPage() {
 
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-gray-500">
-                    Active Review Value
+                    Active Field
                   </label>
                   <select
                     className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100"
@@ -274,10 +254,10 @@ export default function ResolutionCleanerPage() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="secondary" size="sm" onClick={() => cycleGroup(-1)} disabled={navigatorGroups.length < 2}>
-                    Previous Value
+                    Previous Field
                   </Button>
                   <Button variant="secondary" size="sm" onClick={() => cycleGroup(1)} disabled={navigatorGroups.length < 2}>
-                    Next Value
+                    Next Field
                   </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -287,7 +267,7 @@ export default function ResolutionCleanerPage() {
                     onClick={() => cycleOccurrence(-1)}
                     disabled={activeOccurrenceTotal <= 1}
                   >
-                    Previous Mention
+                    Previous Occurrence
                   </Button>
                   <Button
                     variant="secondary"
@@ -295,19 +275,15 @@ export default function ResolutionCleanerPage() {
                     onClick={() => cycleOccurrence(1)}
                     disabled={activeOccurrenceTotal <= 1}
                   >
-                    Next Mention
+                    Next Occurrence
                   </Button>
                 </div>
                 <div className="text-xs text-gray-400">
                   {activeGroup
-                    ? `Reviewing "${activeGroup.detected_value_raw}" — mention ${Math.min(sync.activeOccurrenceIndex + 1, activeOccurrenceTotal)} of ${activeOccurrenceTotal}`
-                    : "No active review value selected"}
+                    ? `Reviewing "${activeGroup.detected_value_raw}" — occurrence ${Math.min(sync.activeOccurrenceIndex + 1, activeOccurrenceTotal)} of ${activeOccurrenceTotal}`
+                    : "No active field selected"}
                 </div>
-                <p className="text-[11px] text-gray-500">
-                  Navigation order follows document position (top to bottom).
-                </p>
-
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2">
                   <Button
                     variant="secondary"
                     size="sm"
@@ -315,14 +291,6 @@ export default function ResolutionCleanerPage() {
                     disabled={!activeGroup}
                   >
                     Replace Active
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={jumpToNextUnresolved}
-                    disabled={unresolvedGroups.length === 0}
-                  >
-                    Next Unresolved Value
                   </Button>
                 </div>
 
