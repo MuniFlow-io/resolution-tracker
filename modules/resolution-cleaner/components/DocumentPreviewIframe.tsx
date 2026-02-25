@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
@@ -20,11 +20,13 @@ export function DocumentPreviewIframe({
   replacements,
 }: DocumentPreviewIframeProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [iframeReady, setIframeReady] = useState(false);
 
   // Initialize the iframe content and message listener
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
+    setIframeReady(false);
 
     // Inject the HTML and a small script to handle clicks and receiving messages
     const content = `
@@ -98,6 +100,9 @@ export function DocumentPreviewIframe({
               });
             }
           });
+
+          // Signal handshake readiness so parent can post state deterministically.
+          window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
         </script>
       </html>
     `;
@@ -113,6 +118,11 @@ export function DocumentPreviewIframe({
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // In a real app we'd check origin, but this is a blob URL
+      if (event.data?.type === "IFRAME_READY") {
+        setIframeReady(true);
+        return;
+      }
+
       if (event.data?.type === "MARK_CLICKED" && event.data.groupId) {
         onHighlightClick(event.data.groupId);
       }
@@ -125,30 +135,25 @@ export function DocumentPreviewIframe({
   // Send messages TO the iframe (scroll to active, update text)
   useEffect(() => {
     const iframeWindow = iframeRef.current?.contentWindow;
-    if (!iframeWindow) return;
+    if (!iframeWindow || !iframeReady) return;
 
-    // We use a small timeout to ensure the iframe script has initialized after src change
-    const timer = setTimeout(() => {
-      iframeWindow.postMessage(
-        {
-          type: "SET_ACTIVE",
-          groupId: activeGroupId,
-          occurrenceIndex: activeOccurrenceIndex,
-        },
-        "*",
-      );
+    iframeWindow.postMessage(
+      {
+        type: "SET_ACTIVE",
+        groupId: activeGroupId,
+        occurrenceIndex: activeOccurrenceIndex,
+      },
+      "*",
+    );
 
-      iframeWindow.postMessage(
-        {
-          type: "APPLY_REPLACEMENTS",
-          replacements,
-        },
-        "*",
-      );
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, [activeGroupId, activeOccurrenceIndex, replacements]);
+    iframeWindow.postMessage(
+      {
+        type: "APPLY_REPLACEMENTS",
+        replacements,
+      },
+      "*",
+    );
+  }, [activeGroupId, activeOccurrenceIndex, replacements, iframeReady]);
 
   return (
     <Card className="flex h-full min-h-[600px] flex-col overflow-hidden p-0">

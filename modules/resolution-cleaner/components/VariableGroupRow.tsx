@@ -36,7 +36,7 @@ export function VariableGroupRow({
   const activeCount = group.occurrenceStates.filter((o) => o.status !== "excluded").length;
 
   return (
-    <Card className={cn("p-4", rowClass(group))}>
+    <Card id={`group-${group.group_id}`} className={cn("p-4", rowClass(group))}>
       {/* ── Header row ─────────────────────────────────── */}
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">

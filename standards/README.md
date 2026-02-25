@@ -14,6 +14,9 @@ Every document here is backed by academic research, industry authority, or large
 | [LOADING-STRATEGY-STANDARDS.md](./LOADING-STRATEGY-STANDARDS.md) | Critical path loading, lazy vs eager, Core Web Vitals, skeletons | Google web.dev, HTTP Archive 2025 |
 | [ERROR-UX-STANDARDS.md](./ERROR-UX-STANDARDS.md) | Error display patterns, message copy, accessibility | Nielsen Norman Group, WCAG 2.2 |
 | [VALIDATION-STANDARDS.md](./VALIDATION-STANDARDS.md) | When to validate, progressive validation, Zod patterns, edge cases | Baymard Institute, Smashing Magazine, a11yblog |
+| [DETERMINISM-CONTRACT.md](./DETERMINISM-CONTRACT.md) | Deterministic pipeline contract, stable ordering, replay guarantees | Reproducibility testing practice, internal production contract |
+| [TESTING-STRATEGY.md](./TESTING-STRATEGY.md) | Unit/golden/replay/fuzz-lite strategy and red-first workflow | Test pyramid reliability guidance |
+| [CI-QUALITY-GATES.md](./CI-QUALITY-GATES.md) | Required build gates and static guard policy for replacement path | CI reliability and release-risk controls |
 | [LAYOUT-SPACE-STANDARDS.md](./LAYOUT-SPACE-STANDARDS.md) | 8-point grid, containers, whitespace, density levels | Atlassian Design, Microsoft WAF, WCAG 2.2 |
 | [OPEN-SOURCE-STRATEGY.md](./OPEN-SOURCE-STRATEGY.md) | Library selection, evaluation criteria, preferred library list | OpenSSF, npm ecosystem research 2025 |
 | [COLOR-AND-VISUAL-RESTRAINT-STANDARDS.md](./COLOR-AND-VISUAL-RESTRAINT-STANDARDS.md) | Color budget, restraint rules, contrast, state colors | WCAG 2.2, ACM eye-tracking research 2025 |
@@ -50,6 +53,11 @@ These standards are the answer to all of those.
 **When building async data features:**
 1. Check `LOADING-STRATEGY-STANDARDS.md` — skeleton vs spinner, lazy vs eager
 2. Check `ERROR-UX-STANDARDS.md` — section error banners, retry patterns
+
+**When touching Resolution Cleaner processing:**
+1. Check `DETERMINISM-CONTRACT.md` — stage purity, stable ordering, deterministic IDs
+2. Check `TESTING-STRATEGY.md` — required test layers and red-first behavior changes
+3. Check `CI-QUALITY-GATES.md` — build-blocking checks and static guard expectations
 
 **When adding a new library:**
 1. Check `OPEN-SOURCE-STRATEGY.md` — evaluate before installing

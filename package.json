@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "npx ts-node --project tsconfig.test.json -r tsconfig-paths/register tests/services.test.ts"
+    "test": "npx ts-node --project tsconfig.test.json -r tsconfig-paths/register tests/run.ts"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
