@@ -1,4 +1,4 @@
-import AdmZip from "adm-zip";
+import PizZip from "pizzip";
 
 /**
  * A RunSegment represents one <w:t> element's text and its exact byte
@@ -25,8 +25,15 @@ export interface ParsedDocument {
   runs: RunSegment[];
   /** Raw XML string from word/document.xml — used by assembleDocx. */
   xmlString: string;
-  /** Original zip — used by assembleDocx to preserve all non-document files. */
-  rawZip: AdmZip;
+  /**
+   * The loaded PizZip instance — used by assembleDocx to preserve all
+   * non-document files. PizZip is used here instead of adm-zip because
+   * adm-zip 0.5.x has a known bug where reading a ZIP with DATA_DESCRIPTOR
+   * entries (which Microsoft Word always emits) and calling toBuffer() produces
+   * a corrupted archive. PizZip regenerates all entries from scratch on
+   * generate(), making it immune to this class of corruption.
+   */
+  rawZip: PizZip;
 }
 
 // Matches every <w:t ...>content</w:t> including empty ones and
@@ -46,13 +53,13 @@ function decodeXmlEntities(s: string): string {
 }
 
 export function parseDocx(buffer: Buffer): ParsedDocument {
-  const zip = new AdmZip(buffer);
-  const xmlEntry = zip.getEntry("word/document.xml");
-  if (!xmlEntry) {
+  const zip = new PizZip(buffer);
+  const xmlFile = zip.file("word/document.xml");
+  if (!xmlFile) {
     throw new Error("Invalid .docx file — word/document.xml not found");
   }
 
-  const xmlString = xmlEntry.getData().toString("utf8");
+  const xmlString = xmlFile.asText();
   const runs: RunSegment[] = [];
 
   // Build a set of paragraph-open byte offsets so we can insert \n between paragraphs.
