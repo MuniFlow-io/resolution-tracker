@@ -26,49 +26,15 @@ interface XmlEdit {
  *   2. Match starts in one run, ends in another  → first: prefix+newValue, last: suffix, middle: ""
  *   3. Match spans > 2 runs  → same logic; intermediate runs are cleared
  */
-function editsForMatch(
-  runs: RunSegment[],
-  matchStart: number,
-  matchEnd: number,
-  newValue: string,
-): XmlEdit[] {
-  const affected = runs.filter((r) => r.flatStart < matchEnd && r.flatEnd > matchStart);
-  if (affected.length === 0) return [];
-
-  const edits: XmlEdit[] = [];
-
-  for (let i = 0; i < affected.length; i++) {
-    const run = affected[i];
-    const isFirst = i === 0;
-    const isLast = i === affected.length - 1;
-
-    // How much of this run's decodedText is BEFORE the match.
-    const prefixLen = Math.max(0, matchStart - run.flatStart);
-    // How much of this run's decodedText is AFTER the match.
-    const suffixStart = Math.max(0, matchEnd - run.flatStart);
-
-    const prefix = run.decodedText.slice(0, prefixLen);
-    const suffix = run.decodedText.slice(suffixStart);
-
-    let newDecoded: string;
-    if (isFirst && isLast) {
-      newDecoded = prefix + newValue + suffix;
-    } else if (isFirst) {
-      newDecoded = prefix + newValue;
-    } else if (isLast) {
-      newDecoded = suffix;
-    } else {
-      newDecoded = "";
+function runIndicesForMatch(runs: RunSegment[], matchStart: number, matchEnd: number): number[] {
+  const affected: number[] = [];
+  for (let i = 0; i < runs.length; i += 1) {
+    const run = runs[i];
+    if (run.flatStart < matchEnd && run.flatEnd > matchStart) {
+      affected.push(i);
     }
-
-    edits.push({
-      xmlContentStart: run.xmlContentStart,
-      xmlContentEnd: run.xmlContentEnd,
-      newEncodedText: encodeXmlEntities(newDecoded),
-    });
   }
-
-  return edits;
+  return affected;
 }
 
 export function applyReplacements(
@@ -90,42 +56,78 @@ export function applyReplacements(
     }
   }
 
-  // 2. Collect all XML edits from all replacements.
-  const allEdits: (XmlEdit & { groupId: string })[] = [];
-
+  // 2. Apply occurrences against mutable run text first.
+  // This avoids stale XML byte offsets when multiple matches touch the same run.
+  const mutableRunTexts = runs.map((run) => run.decodedText);
+  type OccurrenceEdit = { groupId: string; start: number; end: number; newValue: string };
+  const occurrences: OccurrenceEdit[] = [];
   for (const replacement of confirmedReplacements) {
-    for (const { start, end } of replacement.confirmed_occurrence_offsets) {
-      const edits = editsForMatch(runs, start, end, replacement.new_value);
-      for (const edit of edits) {
-        allEdits.push({ ...edit, groupId: replacement.group_id });
-      }
+    for (const occurrence of replacement.confirmed_occurrence_offsets) {
+      occurrences.push({
+        groupId: replacement.group_id,
+        start: occurrence.start,
+        end: occurrence.end,
+        newValue: replacement.new_value,
+      });
     }
   }
 
-  // 3. Sort edits by xmlContentStart DESCENDING so upstream byte positions stay valid.
-  allEdits.sort((a, b) => b.xmlContentStart - a.xmlContentStart);
-
-  // 4. Apply edits surgically.
-  let modifiedXml = xmlString;
+  // Process from right-to-left so flat offsets remain stable.
+  occurrences.sort((a, b) => (b.start - a.start) || (b.end - a.end));
   const actualReplacementCounts: Record<string, number> = {};
+  for (const replacement of confirmedReplacements) {
+    actualReplacementCounts[replacement.group_id] = 0;
+  }
 
-  for (const edit of allEdits) {
+  for (const occurrence of occurrences) {
+    const affectedIndices = runIndicesForMatch(runs, occurrence.start, occurrence.end);
+    if (affectedIndices.length === 0) continue;
+
+    for (let i = 0; i < affectedIndices.length; i += 1) {
+      const runIndex = affectedIndices[i];
+      const run = runs[runIndex];
+      const isFirst = i === 0;
+      const isLast = i === affectedIndices.length - 1;
+
+      const prefixLen = Math.max(0, occurrence.start - run.flatStart);
+      const suffixStart = Math.max(0, occurrence.end - run.flatStart);
+
+      const currentText = mutableRunTexts[runIndex];
+      const prefix = currentText.slice(0, prefixLen);
+      const suffix = currentText.slice(suffixStart);
+
+      if (isFirst && isLast) {
+        mutableRunTexts[runIndex] = prefix + occurrence.newValue + suffix;
+      } else if (isFirst) {
+        mutableRunTexts[runIndex] = prefix + occurrence.newValue;
+      } else if (isLast) {
+        mutableRunTexts[runIndex] = suffix;
+      } else {
+        mutableRunTexts[runIndex] = "";
+      }
+    }
+
+    actualReplacementCounts[occurrence.groupId] =
+      (actualReplacementCounts[occurrence.groupId] ?? 0) + 1;
+  }
+
+  // 3. Emit one XML edit per run and apply right-to-left.
+  const runEdits: XmlEdit[] = [];
+  for (let i = 0; i < runs.length; i += 1) {
+    if (mutableRunTexts[i] === runs[i].decodedText) continue;
+    runEdits.push({
+      xmlContentStart: runs[i].xmlContentStart,
+      xmlContentEnd: runs[i].xmlContentEnd,
+      newEncodedText: encodeXmlEntities(mutableRunTexts[i]),
+    });
+  }
+  runEdits.sort((a, b) => b.xmlContentStart - a.xmlContentStart);
+
+  let modifiedXml = xmlString;
+  for (const edit of runEdits) {
     const before = modifiedXml.slice(0, edit.xmlContentStart);
     const after = modifiedXml.slice(edit.xmlContentEnd);
     modifiedXml = before + edit.newEncodedText + after;
-
-    // Count only "first run" edits (editsForMatch may produce multiple per occurrence,
-    // but the new value is only inserted into the first run).
-    // We identify the first-run edit as the one with the lowest xmlContentStart
-    // per match, but since we sorted descending we track via groupId occurrence grouping.
-    // Simpler: count distinct (groupId, matchStart) pairs — we do that via the
-    // confirmed_occurrence_offsets length below.
-  }
-
-  // Count = number of occurrence offsets per group (all validated above).
-  for (const replacement of confirmedReplacements) {
-    actualReplacementCounts[replacement.group_id] =
-      replacement.confirmed_occurrence_offsets.length;
   }
 
   return { modifiedXmlString: modifiedXml, actualReplacementCounts };

@@ -4,3 +4,4 @@ import "./resolution-cleaner/hard-filters.test";
 import "./resolution-cleaner/determinism-replay.test";
 import "./resolution-cleaner/golden.test";
 import "./resolution-cleaner/currency-trust.test";
+import "./resolution-cleaner/replacement-engine.segment.test";

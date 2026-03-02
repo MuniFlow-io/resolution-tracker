@@ -311,6 +311,51 @@ test("replacementEngine: handles run-spanning replacement", () => {
   pass("Run-spanning replacement handled correctly");
 });
 
+test("replacementEngine: handles multiple matches in same run", () => {
+  const { applyReplacements } = require("../lib/services/resolution-cleaner/replacementEngine");
+
+  const text = "Series 2024-A and Series 2024-A again.";
+  const xml = `<w:p><w:r><w:t>${text}</w:t></w:r></w:p>`;
+  const contentStart = xml.indexOf(">", xml.indexOf("<w:t")) + 1;
+  const contentEnd = xml.indexOf("</w:t>");
+
+  const runs = [
+    {
+      flatStart: 0,
+      flatEnd: text.length,
+      decodedText: text,
+      xmlContentStart: contentStart,
+      xmlContentEnd: contentEnd,
+    },
+  ];
+
+  const target = "Series 2024-A";
+  const firstStart = text.indexOf(target);
+  const secondStart = text.indexOf(target, firstStart + 1);
+
+  const result = applyReplacements(runs, xml, text, [
+    {
+      group_id: "series-group",
+      original_value: target,
+      new_value: "Series 2026-C",
+      confirmed_occurrence_offsets: [
+        { start: firstStart, end: firstStart + target.length },
+        { start: secondStart, end: secondStart + target.length },
+      ],
+      term_key: "series_name",
+    },
+  ]);
+
+  const matches = result.modifiedXmlString.match(/Series 2026-C/g) ?? [];
+  assert.equal(matches.length, 2, "Both in-run matches should be replaced");
+  assert.ok(
+    result.modifiedXmlString.includes("<w:t>"),
+    "Word XML structure should still contain text nodes",
+  );
+  assert.equal(result.actualReplacementCounts["series-group"], 2);
+  pass("Multiple same-run replacements preserve XML and replace all matches");
+});
+
 // ─── Summary ─────────────────────────────────────────────────────────────────
 
 console.log("\n✅  All tests passed\n");
