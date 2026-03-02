@@ -1,3 +1,4 @@
+import AdmZip from "adm-zip";
 import PizZip from "pizzip";
 
 /**
@@ -27,11 +28,9 @@ export interface ParsedDocument {
   xmlString: string;
   /**
    * The loaded PizZip instance — used by assembleDocx to preserve all
-   * non-document files. PizZip is used here instead of adm-zip because
-   * adm-zip 0.5.x has a known bug where reading a ZIP with DATA_DESCRIPTOR
-   * entries (which Microsoft Word always emits) and calling toBuffer() produces
-   * a corrupted archive. PizZip regenerates all entries from scratch on
-   * generate(), making it immune to this class of corruption.
+   * non-document files. We use PizZip for the container structure because
+   * it handles DOCX re-compression safely (unlike adm-zip 0.5.x), but we
+   * use AdmZip to read the initial text to ensure encoding compatibility.
    */
   rawZip: PizZip;
 }
@@ -53,13 +52,20 @@ function decodeXmlEntities(s: string): string {
 }
 
 export function parseDocx(buffer: Buffer): ParsedDocument {
-  const zip = new PizZip(buffer);
-  const xmlFile = zip.file("word/document.xml");
-  if (!xmlFile) {
+  // Hybrid Approach:
+  // 1. Use AdmZip to READ the XML. It handles encoding (BOMs, etc) robustly,
+  //    matching the working BondGenerator logic. PizZip's asText() can be strict/fragile.
+  const reader = new AdmZip(buffer);
+  const xmlString = reader.readAsText("word/document.xml");
+  
+  if (!xmlString) {
     throw new Error("Invalid .docx file — word/document.xml not found");
   }
 
-  const xmlString = xmlFile.asText();
+  // 2. Use PizZip to LOAD the container for later writing.
+  //    PizZip is required for proper re-compression (avoiding adm-zip's corruption bug).
+  const rawZip = new PizZip(buffer);
+
   const runs: RunSegment[] = [];
 
   // Build a set of paragraph-open byte offsets so we can insert \n between paragraphs.
@@ -118,5 +124,5 @@ export function parseDocx(buffer: Buffer): ParsedDocument {
   }
   const flatText = flatParts.join("");
 
-  return { flatText, runs, xmlString, rawZip: zip };
+  return { flatText, runs, xmlString, rawZip };
 }
