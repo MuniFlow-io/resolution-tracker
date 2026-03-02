@@ -11,6 +11,8 @@ import PizZip from "pizzip";
  * reporting the downloaded file as corrupted.
  */
 export function assembleDocx(rawZip: PizZip, modifiedXmlString: string): Buffer {
-  rawZip.file("word/document.xml", modifiedXmlString);
+  // align with BondGenerator: explicitly buffer as UTF-8 to prevent encoding corruption
+  const xmlBuffer = Buffer.from(modifiedXmlString, "utf8");
+  rawZip.file("word/document.xml", xmlBuffer);
   return rawZip.generate({ type: "nodebuffer", compression: "DEFLATE" });
 }
