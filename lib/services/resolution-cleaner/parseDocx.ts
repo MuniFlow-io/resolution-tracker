@@ -1,4 +1,3 @@
-import AdmZip from "adm-zip";
 import PizZip from "pizzip";
 
 /**
@@ -26,12 +25,7 @@ export interface ParsedDocument {
   runs: RunSegment[];
   /** Raw XML string from word/document.xml — used by assembleDocx. */
   xmlString: string;
-  /**
-   * The loaded PizZip instance — used by assembleDocx to preserve all
-   * non-document files. We use PizZip for the container structure because
-   * it handles DOCX re-compression safely (unlike adm-zip 0.5.x), but we
-   * use AdmZip to read the initial text to ensure encoding compatibility.
-   */
+  /** The loaded PizZip instance — used by assembleDocx to preserve all non-document files. */
   rawZip: PizZip;
 }
 
@@ -52,19 +46,13 @@ function decodeXmlEntities(s: string): string {
 }
 
 export function parseDocx(buffer: Buffer): ParsedDocument {
-  // Hybrid Approach:
-  // 1. Use AdmZip to READ the XML. It handles encoding (BOMs, etc) robustly,
-  //    matching the working BondGenerator logic. PizZip's asText() can be strict/fragile.
-  const reader = new AdmZip(buffer);
-  const xmlString = reader.readAsText("word/document.xml");
-  
-  if (!xmlString) {
+  // Single-engine strategy: parse and reassemble with the same ZIP implementation.
+  const rawZip = new PizZip(buffer);
+  const xmlFile = rawZip.file("word/document.xml");
+  if (!xmlFile) {
     throw new Error("Invalid .docx file — word/document.xml not found");
   }
-
-  // 2. Use PizZip to LOAD the container for later writing.
-  //    PizZip is required for proper re-compression (avoiding adm-zip's corruption bug).
-  const rawZip = new PizZip(buffer);
+  const xmlString = xmlFile.asText();
 
   const runs: RunSegment[] = [];
 

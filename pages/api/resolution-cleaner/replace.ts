@@ -5,10 +5,10 @@ import { logger } from "@/lib/logger";
 import { parseDocx } from "@/lib/services/resolution-cleaner/parseDocx";
 import { applyReplacements } from "@/lib/services/resolution-cleaner/replacementEngine";
 import { assembleDocx } from "@/lib/services/resolution-cleaner/assembleDocx";
+import { validateDocxBuffer } from "@/lib/services/resolution-cleaner/validateDocx";
 import type {
   ChangeLogEntry,
   ConfirmedTerms,
-  ReplaceResult,
   ServiceResult,
 } from "@/modules/resolution-cleaner/types/resolutionData";
 
@@ -55,7 +55,7 @@ function buildConfirmedTerms(changeLog: ChangeLogEntry[]): ConfirmedTerms {
 
 async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ServiceResult<ReplaceResult>>,
+  res: NextApiResponse,
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, error: "Method not allowed" });
@@ -78,6 +78,16 @@ async function handler(
     );
 
     const updatedBuffer = assembleDocx(parsed.rawZip, modifiedXmlString);
+    const validationResult = validateDocxBuffer(updatedBuffer);
+    if (!validationResult.valid) {
+      logger.error("DOCX validation failed after replacement", {
+        error: validationResult.error,
+      });
+      return res.status(500).json({
+        success: false,
+        error: validationResult.error ?? "Generated DOCX failed validation",
+      } satisfies ServiceResult<never>);
+    }
     const timestamp = new Date().toISOString();
 
     const changeLog: ChangeLogEntry[] = confirmedReplacements.map((entry) => ({
@@ -95,14 +105,13 @@ async function handler(
       totalOccurrences: changeLog.reduce((sum, item) => sum + item.replacement_count, 0),
     });
 
-    return res.status(200).json({
-      success: true,
-      data: {
-        updatedFileBase64: updatedBuffer.toString("base64"),
-        changeLog,
-        confirmedTerms,
-      },
-    });
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    );
+    res.setHeader("Content-Disposition", 'attachment; filename="resolution_updated.docx"');
+    res.setHeader("Content-Length", String(updatedBuffer.length));
+    return res.status(200).send(updatedBuffer);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Replacement failed";
     logger.error("Replacement failed", { error: message });

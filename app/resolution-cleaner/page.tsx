@@ -89,16 +89,8 @@ export default function ResolutionCleanerPage() {
 
   /* ── Download ────────────────────────────────────────────── */
   function handleDownload() {
-    if (!replacement.updatedFileBase64 || !upload.parseResult?.fileName) return;
-    const bytes = atob(replacement.updatedFileBase64);
-    const byteArray = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i += 1) byteArray[i] = bytes.charCodeAt(i);
-
-    const blob = new Blob([byteArray], {
-      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    });
-
-    const url = URL.createObjectURL(blob);
+    if (!replacement.updatedFileBlob || !upload.parseResult?.fileName) return;
+    const url = URL.createObjectURL(replacement.updatedFileBlob);
     const a = document.createElement("a");
     a.href = url;
     a.download = upload.parseResult.fileName.replace(".docx", "_updated.docx");

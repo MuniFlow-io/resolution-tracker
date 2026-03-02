@@ -14,11 +14,11 @@ export interface UseReplacementResult {
   error: string | null;
   changeLog: ChangeLogEntry[];
   confirmedTerms: ConfirmedTerms;
-  updatedFileBase64: string | null;
+  updatedFileBlob: Blob | null;
   applyReplacements: (
     rawFileBase64: string,
     replacements: ConfirmedReplacement[],
-  ) => Promise<ServiceResult<{ updatedFileBase64: string }>>;
+  ) => Promise<ServiceResult<{ updatedFileBlob: Blob }>>;
   resetReplacement: () => void;
 }
 
@@ -27,12 +27,12 @@ export function useReplacement(): UseReplacementResult {
   const [error, setError] = useState<string | null>(null);
   const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [confirmedTerms, setConfirmedTerms] = useState<ConfirmedTerms>({});
-  const [updatedFileBase64, setUpdatedFileBase64] = useState<string | null>(null);
+  const [updatedFileBlob, setUpdatedFileBlob] = useState<Blob | null>(null);
 
   async function applyReplacements(
     rawFileBase64: string,
     replacements: ConfirmedReplacement[],
-  ): Promise<ServiceResult<{ updatedFileBase64: string }>> {
+  ): Promise<ServiceResult<{ updatedFileBlob: Blob }>> {
     setIsReplacing(true);
     setError(null);
 
@@ -44,10 +44,11 @@ export function useReplacement(): UseReplacementResult {
       return { success: false, error: result.error ?? "Replacement failed" };
     }
 
-    setUpdatedFileBase64(result.data.updatedFileBase64);
-    setChangeLog(result.data.changeLog);
-    setConfirmedTerms(result.data.confirmedTerms);
-    return { success: true, data: { updatedFileBase64: result.data.updatedFileBase64 } };
+    setUpdatedFileBlob(result.data.updatedFileBlob);
+    // Binary transport path intentionally does not return change log metadata.
+    setChangeLog([]);
+    setConfirmedTerms({});
+    return { success: true, data: { updatedFileBlob: result.data.updatedFileBlob } };
   }
 
   function resetReplacement() {
@@ -55,7 +56,7 @@ export function useReplacement(): UseReplacementResult {
     setError(null);
     setChangeLog([]);
     setConfirmedTerms({});
-    setUpdatedFileBase64(null);
+    setUpdatedFileBlob(null);
   }
 
   return {
@@ -63,7 +64,7 @@ export function useReplacement(): UseReplacementResult {
     error,
     changeLog,
     confirmedTerms,
-    updatedFileBase64,
+    updatedFileBlob,
     applyReplacements,
     resetReplacement,
   };

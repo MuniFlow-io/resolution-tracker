@@ -1,7 +1,6 @@
 import type {
   ConfirmedReplacement,
   ParseResult,
-  ReplaceResult,
   ServiceResult,
 } from "@/modules/resolution-cleaner/types/resolutionData";
 
@@ -28,7 +27,7 @@ export async function parseResolutionDocx(file: File): Promise<ServiceResult<Par
 export async function applyResolutionReplacements(
   rawFileBase64: string,
   confirmedReplacements: ConfirmedReplacement[],
-): Promise<ServiceResult<ReplaceResult>> {
+): Promise<ServiceResult<{ updatedFileBlob: Blob }>> {
   const response = await fetch("/api/resolution-cleaner/replace", {
     method: "POST",
     headers: {
@@ -40,6 +39,16 @@ export async function applyResolutionReplacements(
     }),
   });
 
-  return parseResponse<ReplaceResult>(response);
+  if (!response.ok) {
+    try {
+      const json = (await response.json()) as ServiceResult<never>;
+      return { success: false, error: json.error ?? "Request failed" };
+    } catch {
+      return { success: false, error: "Request failed" };
+    }
+  }
+
+  const updatedFileBlob = await response.blob();
+  return { success: true, data: { updatedFileBlob } };
 }
 
