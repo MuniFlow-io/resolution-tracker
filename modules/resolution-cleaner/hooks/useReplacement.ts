@@ -35,19 +35,24 @@ export function useReplacement(): UseReplacementResult {
   ): Promise<ServiceResult<{ updatedFileBase64: string }>> {
     setIsReplacing(true);
     setError(null);
+    try {
+      const result = await applyResolutionReplacements(rawFileBase64, replacements);
+      if (!result.success || !result.data) {
+        setError(result.error ?? "Replacement failed");
+        return { success: false, error: result.error ?? "Replacement failed" };
+      }
 
-    const result = await applyResolutionReplacements(rawFileBase64, replacements);
-    setIsReplacing(false);
-
-    if (!result.success || !result.data) {
-      setError(result.error ?? "Replacement failed");
-      return { success: false, error: result.error ?? "Replacement failed" };
+      setUpdatedFileBase64(result.data.updatedFileBase64);
+      setChangeLog(result.data.changeLog);
+      setConfirmedTerms(result.data.confirmedTerms);
+      return { success: true, data: { updatedFileBase64: result.data.updatedFileBase64 } };
+    } catch {
+      const fallback = "Replacement failed. Please try again.";
+      setError(fallback);
+      return { success: false, error: fallback };
+    } finally {
+      setIsReplacing(false);
     }
-
-    setUpdatedFileBase64(result.data.updatedFileBase64);
-    setChangeLog(result.data.changeLog);
-    setConfirmedTerms(result.data.confirmedTerms);
-    return { success: true, data: { updatedFileBase64: result.data.updatedFileBase64 } };
   }
 
   function resetReplacement() {

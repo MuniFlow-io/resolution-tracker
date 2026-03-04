@@ -7,10 +7,12 @@ import { VariableGroupRow } from "@/modules/resolution-cleaner/components/Variab
 import type { VariableGroupState, VariableType } from "@/modules/resolution-cleaner/types/resolutionData";
 
 export type ReviewFilter = "all" | "needs_action" | "confirmed" | "ignored";
+export type ViewMode = "grouped" | "document";
 
 interface VariableGroupListProps {
   groups: VariableGroupState[];
   filter: ReviewFilter;
+  viewMode: ViewMode;
   collapsedByType: Partial<Record<VariableType, boolean>>;
   onToggleSection: (type: VariableType) => void;
   onPreview: (groupId: string) => void;
@@ -28,6 +30,7 @@ interface VariableGroupListProps {
   replaceGroupId: string | null;
   onReplaceConfirm: (groupId: string, value: string) => void;
   onReplaceCancel: () => void;
+  activeGroupId: string | null;
 }
 
 const ORDER: VariableType[] = [
@@ -59,6 +62,7 @@ const LABELS: Record<VariableType, string> = {
 export function VariableGroupList({
   groups,
   filter,
+  viewMode,
   collapsedByType,
   onToggleSection,
   onPreview,
@@ -74,6 +78,7 @@ export function VariableGroupList({
   replaceGroupId,
   onReplaceConfirm,
   onReplaceCancel,
+  activeGroupId,
 }: VariableGroupListProps) {
   const filteredGroups = groups.filter((group) => {
     if (filter === "all") return true;
@@ -89,6 +94,57 @@ export function VariableGroupList({
     if (group.action === "ignored") return 4;
     return 1;
   };
+
+  if (viewMode === "document") {
+    const sortedGroups = [...filteredGroups].sort(
+      (a, b) =>
+        (a.occurrences[0]?.start_offset ?? Number.MAX_SAFE_INTEGER) -
+          (b.occurrences[0]?.start_offset ?? Number.MAX_SAFE_INTEGER) ||
+        a.detected_value_raw.localeCompare(b.detected_value_raw),
+    );
+
+    if (sortedGroups.length === 0) return null;
+
+    return (
+      <div className="space-y-2">
+        {sortedGroups.map((group) => {
+          const isPreviewing = group.group_id === previewGroupId;
+          const isReplacing = group.group_id === replaceGroupId;
+
+          const panelSlot = isPreviewing ? (
+            <PreviewPanel
+              group={group}
+              occurrenceIndex={previewOccurrenceIndex}
+              onClose={onPreviewClose}
+              onPrev={onPreviewPrev}
+              onNext={onPreviewNext}
+              onToggleExclude={(idx) => onPreviewToggleExclude(group.group_id, idx)}
+            />
+          ) : isReplacing ? (
+            <ReplaceForm
+              group={group}
+              onCancel={onReplaceCancel}
+              onConfirm={(value) => onReplaceConfirm(group.group_id, value)}
+            />
+          ) : undefined;
+
+          return (
+            <VariableGroupRow
+              key={group.group_id}
+              group={group}
+              onPreview={() => onPreview(group.group_id)}
+              onStartReplace={() => onStartReplace(group.group_id)}
+              onIgnore={() => onIgnore(group.group_id)}
+              onUndo={() => onUndo(group.group_id)}
+              panelSlot={panelSlot}
+              categoryLabel={LABELS[group.type]}
+              isActive={group.group_id === activeGroupId}
+            />
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7">
@@ -154,6 +210,7 @@ export function VariableGroupList({
                     onIgnore={() => onIgnore(group.group_id)}
                     onUndo={() => onUndo(group.group_id)}
                     panelSlot={panelSlot}
+                    isActive={group.group_id === activeGroupId}
                   />
                 );
               })}

@@ -77,7 +77,7 @@ async function handler(
       confirmedReplacements,
     );
 
-    const updatedBuffer = assembleDocx(parsed.rawZip, modifiedXmlString);
+    const updatedBuffer = await assembleDocx(fileBuffer, modifiedXmlString);
     const timestamp = new Date().toISOString();
 
     const changeLog: ChangeLogEntry[] = confirmedReplacements.map((entry) => ({

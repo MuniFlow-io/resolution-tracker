@@ -32,18 +32,23 @@ export function useDocumentUpload(): UseDocumentUploadResult {
   async function handleUpload(inputFile: File): Promise<ServiceResult<ParseResult>> {
     setStep("parsing");
     setError(null);
+    try {
+      const result = await parseResolutionDocx(inputFile);
+      if (!result.success || !result.data) {
+        setStep("upload");
+        setError(result.error ?? "Could not parse this document");
+        return { success: false, error: result.error ?? "Could not parse this document" };
+      }
 
-    const result = await parseResolutionDocx(inputFile);
-    if (!result.success || !result.data) {
+      setFile(inputFile);
+      setParseResult(result.data);
+      setStep("review");
+      return { success: true, data: result.data };
+    } catch {
       setStep("upload");
-      setError(result.error ?? "Could not parse this document");
-      return { success: false, error: result.error ?? "Could not parse this document" };
+      setError("Could not parse this document right now. Please try again.");
+      return { success: false, error: "Could not parse this document right now. Please try again." };
     }
-
-    setFile(inputFile);
-    setParseResult(result.data);
-    setStep("review");
-    return { success: true, data: result.data };
   }
 
   function resetUpload() {

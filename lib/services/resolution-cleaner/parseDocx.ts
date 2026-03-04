@@ -25,8 +25,6 @@ export interface ParsedDocument {
   runs: RunSegment[];
   /** Raw XML string from word/document.xml — used by assembleDocx. */
   xmlString: string;
-  /** Original zip — used by assembleDocx to preserve all non-document files. */
-  rawZip: AdmZip;
 }
 
 // Matches every <w:t ...>content</w:t> including empty ones and
@@ -55,13 +53,16 @@ export function parseDocx(buffer: Buffer): ParsedDocument {
   const xmlString = xmlEntry.getData().toString("utf8");
   const runs: RunSegment[] = [];
 
-  // Build a set of paragraph-open byte offsets so we can insert \n between paragraphs.
-  const paragraphStarts = new Set<number>();
+  // Build a sorted array of paragraph-open byte offsets so we can insert \n between paragraphs.
+  // A Set iteration order is not spec-guaranteed for numeric keys; an explicitly sorted array
+  // is required by the Determinism Contract to ensure stable flatText offset calculation.
+  const paragraphStarts: number[] = [];
   W_P_OPEN_REGEX.lastIndex = 0;
   let pm: RegExpExecArray | null = null;
   while ((pm = W_P_OPEN_REGEX.exec(xmlString)) !== null) {
-    paragraphStarts.add(pm.index);
+    paragraphStarts.push(pm.index);
   }
+  paragraphStarts.sort((a, b) => a - b);
 
   // Walk every <w:t> element in document order.
   // We interleave paragraph-break characters when we cross a paragraph boundary.
@@ -111,5 +112,5 @@ export function parseDocx(buffer: Buffer): ParsedDocument {
   }
   const flatText = flatParts.join("");
 
-  return { flatText, runs, xmlString, rawZip: zip };
+  return { flatText, runs, xmlString };
 }

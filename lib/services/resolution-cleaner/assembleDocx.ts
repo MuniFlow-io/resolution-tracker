@@ -1,7 +1,13 @@
-import AdmZip from "adm-zip";
+import JSZip from "jszip";
 
-export function assembleDocx(rawZip: AdmZip, modifiedXmlString: string): Buffer {
-  rawZip.updateFile("word/document.xml", Buffer.from(modifiedXmlString, "utf8"));
-  return rawZip.toBuffer();
+export async function assembleDocx(fileBuffer: Buffer, modifiedXmlString: string): Promise<Buffer> {
+  const zip = await JSZip.loadAsync(fileBuffer);
+  zip.file("word/document.xml", modifiedXmlString);
+  return zip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+    compressionOptions: {
+      level: 6,
+    },
+  });
 }
-
