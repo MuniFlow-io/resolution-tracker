@@ -67,8 +67,12 @@ export function DocumentPreviewIframe({
                 const targetMark = groups[data.groupId][data.occurrenceIndex || 0];
                 if (targetMark) {
                   targetMark.classList.add('active');
-                  // Scroll it into view smoothly
-                  targetMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  // Center in both axes so highlight is not clipped at edges.
+                  targetMark.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center',
+                  });
                 }
               }
             }
@@ -132,7 +136,7 @@ export function DocumentPreviewIframe({
     return () => window.removeEventListener("message", handleMessage);
   }, [onHighlightClick]);
 
-  // Send messages TO the iframe (scroll to active, update text)
+  // Send active-focus updates on navigation changes.
   useEffect(() => {
     const iframeWindow = iframeRef.current?.contentWindow;
     if (!iframeWindow || !iframeReady) return;
@@ -146,6 +150,13 @@ export function DocumentPreviewIframe({
       "*",
     );
 
+  }, [activeGroupId, activeOccurrenceIndex, iframeReady]);
+
+  // Send replacement text updates only when replacement data changes.
+  useEffect(() => {
+    const iframeWindow = iframeRef.current?.contentWindow;
+    if (!iframeWindow || !iframeReady) return;
+
     iframeWindow.postMessage(
       {
         type: "APPLY_REPLACEMENTS",
@@ -153,7 +164,7 @@ export function DocumentPreviewIframe({
       },
       "*",
     );
-  }, [activeGroupId, activeOccurrenceIndex, replacements, iframeReady]);
+  }, [replacements, iframeReady]);
 
   return (
     <Card className="flex h-full min-h-[600px] flex-col overflow-hidden p-0">

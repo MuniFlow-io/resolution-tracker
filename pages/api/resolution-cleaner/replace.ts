@@ -12,6 +12,13 @@ import type {
   ServiceResult,
 } from "@/modules/resolution-cleaner/types/resolutionData";
 
+export const config = {
+  api: {
+    // rawFileBase64 payload can exceed the default 1mb parser limit.
+    bodyParser: { sizeLimit: "20mb" },
+  },
+};
+
 const schema = z.object({
   rawFileBase64: z.string().min(1),
   confirmedReplacements: z.array(
@@ -53,6 +60,16 @@ function buildConfirmedTerms(changeLog: ChangeLogEntry[]): ConfirmedTerms {
   return terms;
 }
 
+function hasZipMagic(buffer: Buffer): boolean {
+  return (
+    buffer.length >= 4 &&
+    buffer[0] === 0x50 && // P
+    buffer[1] === 0x4b && // K
+    [0x03, 0x05, 0x07].includes(buffer[2]) &&
+    [0x04, 0x06, 0x08].includes(buffer[3])
+  );
+}
+
 async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -78,6 +95,13 @@ async function handler(
     );
 
     const updatedBuffer = assembleDocx(parsed.rawZip, modifiedXmlString);
+    if (!hasZipMagic(updatedBuffer)) {
+      logger.error("DOCX output missing ZIP magic header");
+      return res.status(500).json({
+        success: false,
+        error: "Generated DOCX is not a valid ZIP container",
+      } satisfies ServiceResult<never>);
+    }
     const validationResult = validateDocxBuffer(updatedBuffer);
     if (!validationResult.valid) {
       logger.error("DOCX validation failed after replacement", {
@@ -109,6 +133,7 @@ async function handler(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     );
+    res.setHeader("Content-Transfer-Encoding", "binary");
     res.setHeader("Content-Disposition", 'attachment; filename="resolution_updated.docx"');
     res.setHeader("Content-Length", String(updatedBuffer.length));
     return res.status(200).send(updatedBuffer);

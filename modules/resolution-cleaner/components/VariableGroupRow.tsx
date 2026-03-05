@@ -16,6 +16,10 @@ interface VariableGroupRowProps {
   onUndo: () => void;
   /** Rendered inline below the action buttons — PreviewPanel or ReplaceForm. */
   panelSlot?: ReactNode;
+  /** Optional label to display the category (e.g. "Dates") above the value. */
+  categoryLabel?: string;
+  /** When true, shows a light yellow glow to match the document highlight. */
+  isActive?: boolean;
 }
 
 function rowClass(group: VariableGroupState): string {
@@ -32,14 +36,28 @@ export function VariableGroupRow({
   onIgnore,
   onUndo,
   panelSlot,
+  categoryLabel,
+  isActive,
 }: VariableGroupRowProps) {
   const activeCount = group.occurrenceStates.filter((o) => o.status !== "excluded").length;
 
   return (
-    <Card id={`group-${group.group_id}`} className={cn("p-4", rowClass(group))}>
+    <Card
+      id={`group-${group.group_id}`}
+      className={cn(
+        "p-3 transition-shadow",
+        rowClass(group),
+        isActive && "border-yellow-600/70 ring-1 ring-inset ring-yellow-500/55 bg-yellow-950/5",
+      )}
+    >
       {/* ── Header row ─────────────────────────────────── */}
-      <div className="flex min-w-0 items-start justify-between gap-3">
+      <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
+          {categoryLabel ? (
+            <span className="mb-1 inline-block rounded bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+              {categoryLabel}
+            </span>
+          ) : null}
           <p
             className={cn(
               "break-words text-sm font-medium",
@@ -49,7 +67,7 @@ export function VariableGroupRow({
             {group.detected_value_raw}
           </p>
           {group.action === "done" && group.replacement_value ? (
-            <p className="mt-1 break-words text-xs text-green-300">
+            <p className="mt-0.5 break-words text-xs text-green-300">
               → {group.replacement_value}
             </p>
           ) : null}
@@ -61,12 +79,12 @@ export function VariableGroupRow({
 
       {/* ── Action buttons ─────────────────────────────── */}
       {group.is_locked ? (
-        <div className="mt-3 flex items-center gap-2 text-xs text-amber-300">
+        <div className="mt-2 flex items-center gap-2 text-xs text-amber-300">
           <Lock className="h-3.5 w-3.5" aria-hidden="true" />
           Locked anchor — display only
         </div>
       ) : (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           {group.action === "ignored" ? (
             <Button variant="ghost" size="sm" onClick={onUndo}>
               Undo Ignore
@@ -102,7 +120,7 @@ export function VariableGroupRow({
 
       {/* ── Inline panel (Preview or Replace) ──────────── */}
       {panelSlot ? (
-        <div className="-mx-4 mt-3 border-t border-gray-700/60 px-4 pt-4">
+        <div className="-mx-3 mt-2 border-t border-gray-700/60 px-3 pt-3">
           {panelSlot}
         </div>
       ) : null}

@@ -35,20 +35,25 @@ export function useReplacement(): UseReplacementResult {
   ): Promise<ServiceResult<{ updatedFileBlob: Blob }>> {
     setIsReplacing(true);
     setError(null);
+    try {
+      const result = await applyResolutionReplacements(rawFileBase64, replacements);
+      if (!result.success || !result.data) {
+        setError(result.error ?? "Replacement failed");
+        return { success: false, error: result.error ?? "Replacement failed" };
+      }
 
-    const result = await applyResolutionReplacements(rawFileBase64, replacements);
-    setIsReplacing(false);
-
-    if (!result.success || !result.data) {
-      setError(result.error ?? "Replacement failed");
-      return { success: false, error: result.error ?? "Replacement failed" };
+      setUpdatedFileBlob(result.data.updatedFileBlob);
+      // Binary transport path intentionally does not return change log metadata.
+      setChangeLog([]);
+      setConfirmedTerms({});
+      return { success: true, data: { updatedFileBlob: result.data.updatedFileBlob } };
+    } catch {
+      const fallback = "Replacement failed. Please try again.";
+      setError(fallback);
+      return { success: false, error: fallback };
+    } finally {
+      setIsReplacing(false);
     }
-
-    setUpdatedFileBlob(result.data.updatedFileBlob);
-    // Binary transport path intentionally does not return change log metadata.
-    setChangeLog([]);
-    setConfirmedTerms({});
-    return { success: true, data: { updatedFileBlob: result.data.updatedFileBlob } };
   }
 
   function resetReplacement() {

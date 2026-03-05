@@ -62,12 +62,12 @@ export function PreviewPanel({
       </div>
 
       {/* ── Desktop: inline within the row card ─────────────────── */}
-      <div className="hidden sm:block space-y-3">
+      <div className="hidden sm:block space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-gray-400">
+          <p className="text-[11px] text-gray-400">
             Occurrence {occurrenceIndex + 1} of {total}
           </p>
-          <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
+          <Button variant="ghost" size="sm" onClick={onClose} className="px-2 py-1 text-xs">
             Close
           </Button>
         </div>
@@ -100,7 +100,7 @@ function ContextBlock({
   excluded: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-gray-700 bg-gray-950 p-3 text-xs leading-relaxed text-gray-300">
+    <div className="rounded-md border border-gray-700 bg-gray-950 p-2 text-[11px] leading-relaxed text-gray-300">
       <span>{occurrence.context_before}</span>
       {excluded ? (
         <span className="line-through text-gray-500">{occurrence.match_text}</span>
@@ -126,17 +126,18 @@ function NavigationRow({
   onNext: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       <Button
         variant="secondary"
         size="sm"
         onClick={onPrev}
         disabled={occurrenceIndex === 0}
         aria-label="Previous occurrence"
+        className="px-2 py-1 text-xs"
       >
         ← Prev
       </Button>
-      <span className="flex-1 text-center text-xs text-gray-400">
+      <span className="flex-1 text-center text-[11px] text-gray-400">
         {occurrenceIndex + 1} / {total}
       </span>
       <Button
@@ -145,6 +146,7 @@ function NavigationRow({
         onClick={onNext}
         disabled={occurrenceIndex === total - 1}
         aria-label="Next occurrence"
+        className="px-2 py-1 text-xs"
       >
         Next →
       </Button>
@@ -160,7 +162,7 @@ function ExcludeToggle({
   onToggle: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-300 select-none">
+    <label className="flex cursor-pointer items-center gap-2 text-[11px] text-gray-300 select-none">
       <input
         type="checkbox"
         checked={excluded}

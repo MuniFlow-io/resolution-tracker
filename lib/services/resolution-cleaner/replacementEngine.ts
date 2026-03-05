@@ -8,7 +8,16 @@ export interface ReplacementResult {
 }
 
 function encodeXmlEntities(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // Strip characters that are illegal in XML 1.0 (control chars below U+0020
+  // except horizontal tab U+0009, line feed U+000A, carriage return U+000D).
+  // Leaving these in produces malformed XML that Word refuses to open.
+  const stripped = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+  return stripped
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 interface XmlEdit {
