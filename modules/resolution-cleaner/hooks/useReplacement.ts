@@ -16,7 +16,7 @@ export interface UseReplacementResult {
   confirmedTerms: ConfirmedTerms;
   updatedFileBlob: Blob | null;
   applyReplacements: (
-    rawFileBase64: string,
+    file: File,
     replacements: ConfirmedReplacement[],
   ) => Promise<ServiceResult<{ updatedFileBlob: Blob }>>;
   resetReplacement: () => void;
@@ -30,13 +30,13 @@ export function useReplacement(): UseReplacementResult {
   const [updatedFileBlob, setUpdatedFileBlob] = useState<Blob | null>(null);
 
   async function applyReplacements(
-    rawFileBase64: string,
+    file: File,
     replacements: ConfirmedReplacement[],
   ): Promise<ServiceResult<{ updatedFileBlob: Blob }>> {
     setIsReplacing(true);
     setError(null);
     try {
-      const result = await applyResolutionReplacements(rawFileBase64, replacements);
+      const result = await applyResolutionReplacements(file, replacements);
       if (!result.success || !result.data) {
         setError(result.error ?? "Replacement failed");
         return { success: false, error: result.error ?? "Replacement failed" };

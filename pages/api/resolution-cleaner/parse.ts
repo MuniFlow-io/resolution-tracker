@@ -65,7 +65,6 @@ async function handler(
       data: {
         fileName: fileItem.originalFilename,
         variableGroups,
-        rawFileBase64: fileBuffer.toString("base64"),
         previewHtml,
       },
     });

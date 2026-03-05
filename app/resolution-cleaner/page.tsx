@@ -73,14 +73,14 @@ export default function ResolutionCleanerPage() {
 
   /* ── Apply all confirmed replacements ───────────────────── */
   async function handleApplyAll() {
-    if (!upload.parseResult?.rawFileBase64) return;
+    if (!upload.file) return;
     const replacements = groups.buildConfirmedReplacements();
     if (replacements.length === 0) return;
 
     upload.setStep("replacing");
     try {
       const result = await replacement.applyReplacements(
-        upload.parseResult.rawFileBase64,
+        upload.file,
         replacements,
       );
       if (!result.success) {

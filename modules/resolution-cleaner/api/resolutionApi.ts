@@ -41,19 +41,17 @@ export async function parseResolutionDocx(file: File): Promise<ServiceResult<Par
 }
 
 export async function applyResolutionReplacements(
-  rawFileBase64: string,
+  file: File,
   confirmedReplacements: ConfirmedReplacement[],
 ): Promise<ServiceResult<{ updatedFileBlob: Blob }>> {
   try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("confirmedReplacements", JSON.stringify(confirmedReplacements));
+
     const response = await fetch("/api/resolution-cleaner/replace", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        rawFileBase64,
-        confirmedReplacements,
-      }),
+      body: formData,
     });
 
     if (!response.ok) {
