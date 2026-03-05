@@ -4,8 +4,8 @@ export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Document Hub</h1>
-        <p className="mt-2 text-sm text-gray-400">
+        <h1 className="text-3xl font-bold text-slate-900">Document Hub</h1>
+        <p className="mt-2 text-sm text-slate-600">
           Precision tools for municipal document workflows.
         </p>
       </header>

@@ -14,12 +14,12 @@ export interface ButtonProps
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-primary-600 text-white hover:bg-primary-500 border border-primary-500/70",
+    "border border-primary-600 bg-primary-500 text-white hover:bg-primary-600",
   secondary:
-    "bg-gray-900 text-gray-100 border border-gray-700 hover:border-gray-600 hover:bg-gray-800",
-  ghost: "bg-transparent text-gray-300 hover:text-white hover:bg-gray-900/60",
+    "border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50",
+  ghost: "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900",
   destructive:
-    "bg-red-950/40 text-red-300 border border-red-800/60 hover:bg-red-900/50",
+    "border border-red-600 bg-red-600 text-white hover:bg-red-700",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -35,7 +35,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={cn(
-          "inline-flex items-center justify-center rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+          "inline-flex items-center justify-center rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-200",
           variantClasses[variant],
           sizeClasses[size],
           className,

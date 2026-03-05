@@ -28,13 +28,13 @@ export function PreviewPanel({
   return (
     <>
       {/* ── Mobile: full-screen overlay ─────────────────────────── */}
-      <div className="fixed inset-0 z-50 flex flex-col bg-gray-950 sm:hidden">
-        <div className="flex items-start justify-between gap-2 border-b border-gray-800 p-4">
+      <div className="fixed inset-0 z-50 flex flex-col bg-white sm:hidden">
+        <div className="flex items-start justify-between gap-2 border-b border-slate-200 p-4">
           <div>
-            <p className="text-sm font-medium text-white">
+            <p className="text-sm font-medium text-slate-900">
               Preview: &ldquo;{group.detected_value_raw}&rdquo;
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">
+            <p className="mt-0.5 text-xs text-slate-500">
               Occurrence {occurrenceIndex + 1} of {total}
             </p>
           </div>
@@ -64,7 +64,7 @@ export function PreviewPanel({
       {/* ── Desktop: inline within the row card ─────────────────── */}
       <div className="hidden sm:block space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-slate-500">
             Occurrence {occurrenceIndex + 1} of {total}
           </p>
           <Button variant="ghost" size="sm" onClick={onClose} className="px-2 py-1 text-xs">
@@ -100,12 +100,12 @@ function ContextBlock({
   excluded: boolean;
 }) {
   return (
-    <div className="rounded-md border border-gray-700 bg-gray-950 p-2 text-[11px] leading-relaxed text-gray-300">
+    <div className="rounded-md border border-slate-300 bg-slate-50 p-2 text-[11px] leading-relaxed text-slate-700">
       <span>{occurrence.context_before}</span>
       {excluded ? (
-        <span className="line-through text-gray-500">{occurrence.match_text}</span>
+        <span className="line-through text-slate-500">{occurrence.match_text}</span>
       ) : (
-        <mark className="rounded bg-yellow-900/60 px-0.5 text-yellow-200 not-italic">
+        <mark className="rounded bg-yellow-200 px-0.5 text-yellow-900 not-italic">
           {occurrence.match_text}
         </mark>
       )}
@@ -137,7 +137,7 @@ function NavigationRow({
       >
         ← Prev
       </Button>
-      <span className="flex-1 text-center text-[11px] text-gray-400">
+      <span className="flex-1 text-center text-[11px] text-slate-500">
         {occurrenceIndex + 1} / {total}
       </span>
       <Button
@@ -162,15 +162,15 @@ function ExcludeToggle({
   onToggle: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 text-[11px] text-gray-300 select-none">
+    <label className="flex cursor-pointer select-none items-center gap-2 text-[11px] text-slate-700">
       <input
         type="checkbox"
         checked={excluded}
         onChange={onToggle}
-        className="h-4 w-4 rounded border-gray-600 bg-gray-900 accent-white"
+        className="h-4 w-4 rounded border-slate-300 bg-white accent-primary-500"
       />
       {excluded ? (
-        <span className="text-gray-500">Excluded from replacement</span>
+        <span className="text-slate-500">Excluded from replacement</span>
       ) : (
         "Exclude this occurrence"
       )}

@@ -23,10 +23,10 @@ interface VariableGroupRowProps {
 }
 
 function rowClass(group: VariableGroupState): string {
-  if (group.is_locked) return "border-amber-800/40 bg-amber-950/10";
-  if (group.action === "done") return "border-green-800/50 bg-green-950/10";
-  if (group.action === "ignored") return "border-gray-800 bg-gray-900/40 opacity-70";
-  return "border-gray-800 bg-gray-900/80";
+  if (group.is_locked) return "border-amber-200 bg-amber-50";
+  if (group.action === "done") return "border-emerald-200 bg-emerald-50";
+  if (group.action === "ignored") return "border-slate-200 bg-slate-50 opacity-70";
+  return "border-slate-200 bg-white";
 }
 
 export function VariableGroupRow({
@@ -47,27 +47,27 @@ export function VariableGroupRow({
       className={cn(
         "p-3 transition-shadow",
         rowClass(group),
-        isActive && "border-yellow-600/70 ring-1 ring-inset ring-yellow-500/55 bg-yellow-950/5",
+        isActive && "border-yellow-400 ring-1 ring-inset ring-yellow-300 bg-yellow-50",
       )}
     >
       {/* ── Header row ─────────────────────────────────── */}
       <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
           {categoryLabel ? (
-            <span className="mb-1 inline-block rounded bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            <span className="mb-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-slate-600">
               {categoryLabel}
             </span>
           ) : null}
           <p
             className={cn(
               "break-words text-sm font-medium",
-              group.action === "ignored" ? "text-gray-500 line-through" : "text-white",
+              group.action === "ignored" ? "text-slate-500 line-through" : "text-slate-900",
             )}
           >
             {group.detected_value_raw}
           </p>
           {group.action === "done" && group.replacement_value ? (
-            <p className="mt-0.5 break-words text-xs text-green-300">
+            <p className="mt-0.5 break-words text-xs text-emerald-700">
               → {group.replacement_value}
             </p>
           ) : null}
@@ -79,7 +79,7 @@ export function VariableGroupRow({
 
       {/* ── Action buttons ─────────────────────────────── */}
       {group.is_locked ? (
-        <div className="mt-2 flex items-center gap-2 text-xs text-amber-300">
+        <div className="mt-2 flex items-center gap-2 text-xs text-amber-700">
           <Lock className="h-3.5 w-3.5" aria-hidden="true" />
           Locked anchor — display only
         </div>
@@ -109,7 +109,7 @@ export function VariableGroupRow({
                 variant="ghost"
                 size="sm"
                 onClick={onIgnore}
-                className="text-gray-400 hover:text-white"
+                className="text-slate-500 hover:text-slate-800"
               >
                 Ignore
               </Button>
@@ -120,7 +120,7 @@ export function VariableGroupRow({
 
       {/* ── Inline panel (Preview or Replace) ──────────── */}
       {panelSlot ? (
-        <div className="-mx-3 mt-2 border-t border-gray-700/60 px-3 pt-3">
+        <div className="-mx-3 mt-2 border-t border-slate-200 px-3 pt-3">
           {panelSlot}
         </div>
       ) : null}

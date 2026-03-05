@@ -47,15 +47,15 @@ export function UploadZone({ onFileSelected, error }: UploadZoneProps) {
           className={cn(
             "flex min-h-48 w-full flex-col items-center justify-center border-2 border-dashed text-center",
             isDragging
-              ? "border-gray-500 bg-gray-800/40"
-              : "border-gray-700 hover:border-gray-600",
-            error && "border-red-700 bg-red-950/10",
+              ? "border-primary-300 bg-primary-50"
+              : "border-slate-300 hover:border-primary-300",
+            error && "border-red-300 bg-red-50",
           )}
         >
-          <Upload className="h-10 w-10 text-gray-300" aria-hidden="true" />
-          <p className="mt-4 text-sm font-medium text-white">Drop your resolution here</p>
-          <p className="mt-1 text-sm text-gray-400">or click to browse</p>
-          <p className="mt-3 text-xs text-gray-500">.docx files only — max 10MB</p>
+          <Upload className="h-10 w-10 text-slate-500" aria-hidden="true" />
+          <p className="mt-4 text-sm font-medium text-slate-900">Drop your resolution here</p>
+          <p className="mt-1 text-sm text-slate-600">or click to browse</p>
+          <p className="mt-3 text-xs text-slate-500">.docx files only — max 10MB</p>
         </Card>
       </button>
 
@@ -73,7 +73,7 @@ export function UploadZone({ onFileSelected, error }: UploadZoneProps) {
       />
 
       {error ? (
-        <p role="alert" className="text-xs text-red-400">
+        <p role="alert" className="text-xs text-red-600">
           {error}
         </p>
       ) : null}

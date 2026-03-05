@@ -19,17 +19,17 @@ import type { VariableType } from "@/modules/resolution-cleaner/types/resolution
 function ParsingSkeleton({ label }: { label: string }) {
   return (
     <Card className="space-y-6">
-      <p className="text-sm text-gray-400">{label}</p>
+      <p className="text-sm text-slate-600">{label}</p>
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-widest text-gray-500">Dates</p>
+        <p className="text-xs uppercase tracking-widest text-slate-500">Dates</p>
         <Skeleton className="h-12 w-full" />
       </div>
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-widest text-gray-500">Dollar Amounts</p>
+        <p className="text-xs uppercase tracking-widest text-slate-500">Dollar Amounts</p>
         <Skeleton className="h-12 w-full" />
       </div>
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-widest text-gray-500">Parties</p>
+        <p className="text-xs uppercase tracking-widest text-slate-500">Parties</p>
         <Skeleton className="h-12 w-full" />
       </div>
     </Card>
@@ -270,28 +270,28 @@ export default function ResolutionCleanerPage() {
           <>
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-white"
+              className="inline-flex items-center gap-1.5 text-sm text-slate-600 transition-colors hover:text-slate-900"
               aria-label="Back to Hub"
             >
               <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Back</span>
             </Link>
-            <span className="text-gray-600" aria-hidden="true">·</span>
-            <h1 className="text-xl font-bold text-white sm:text-2xl">Resolution Cleaner</h1>
+            <span className="text-slate-400" aria-hidden="true">·</span>
+            <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Resolution Cleaner</h1>
           </>
         ) : (
           <>
             <div className="mb-6">
               <Link
                 href="/"
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-sm text-gray-400 transition-colors hover:text-white"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-sm text-slate-600 transition-colors hover:text-slate-900"
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 Back to Hub
               </Link>
             </div>
-            <h1 className="text-2xl font-bold text-white sm:text-3xl">Resolution Cleaner</h1>
-            <p className="mt-1 text-sm text-gray-400">
+            <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Resolution Cleaner</h1>
+            <p className="mt-1 text-sm text-slate-600">
               Upload a resolution to detect and replace deal-specific variables.
             </p>
           </>
@@ -332,25 +332,25 @@ export default function ResolutionCleanerPage() {
             {/* Right workspace viewport: fixed-height stack (controls + scrollable terms list). */}
             <div className="space-y-3 lg:sticky lg:top-1 lg:flex lg:h-[calc(100vh-88px)] lg:flex-col lg:space-y-3 lg:overflow-hidden">
               <Card className="space-y-1.5 p-2.5 sm:p-3 lg:shrink-0 lg:space-y-1.5">
-                <div className="space-y-0.5 border-b border-gray-800 pb-1.5">
-                  <p className="truncate text-xs font-semibold uppercase tracking-wide text-gray-300">
+                <div className="space-y-0.5 border-b border-slate-200 pb-1.5">
+                  <p className="truncate text-xs font-semibold uppercase tracking-wide text-slate-700">
                     {upload.parseResult!.fileName}
                   </p>
-                  <p className="text-[11px] text-gray-500">
+                  <p className="text-[11px] text-slate-500">
                     Confirmed {groups.confirmedCount} · Remaining {unresolvedGroups.length}
                   </p>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] font-medium text-gray-400">Review Mode</span>
-                  <div className="grid grid-cols-2 gap-1 rounded-lg bg-gray-900 p-1">
+                  <span className="text-[11px] font-medium text-slate-600">Review Mode</span>
+                  <div className="grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1">
                     <button
                       type="button"
                       onClick={() => setViewMode("document")}
                       className={`min-h-[44px] rounded px-2.5 py-1.5 text-xs font-medium transition-colors lg:min-h-[36px] ${
                         viewMode === "document"
-                          ? "bg-gray-700 text-white shadow-sm"
-                          : "text-gray-400 hover:text-gray-300"
+                          ? "border border-slate-300 bg-white text-slate-900 shadow-sm"
+                          : "text-slate-600 hover:text-slate-800"
                       }`}
                     >
                       Document Order
@@ -360,8 +360,8 @@ export default function ResolutionCleanerPage() {
                       onClick={() => setViewMode("grouped")}
                       className={`min-h-[44px] rounded px-2.5 py-1.5 text-xs font-medium transition-colors lg:min-h-[36px] ${
                         viewMode === "grouped"
-                          ? "bg-gray-700 text-white shadow-sm"
-                          : "text-gray-400 hover:text-gray-300"
+                          ? "border border-slate-300 bg-white text-slate-900 shadow-sm"
+                          : "text-slate-600 hover:text-slate-800"
                       }`}
                     >
                       Grouped
@@ -369,7 +369,7 @@ export default function ResolutionCleanerPage() {
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-1.5 text-center">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5 text-center">
                   <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
                     <Button
                       variant="ghost"
@@ -381,7 +381,7 @@ export default function ResolutionCleanerPage() {
                     >
                       {"<"}
                     </Button>
-                    <p className="text-center text-xs text-gray-300">
+                    <p className="text-center text-xs text-slate-700">
                       {navigatorGroups.length === 0
                         ? "No active field"
                         : `${activeGroupPosition} of ${navigatorGroups.length}`}
@@ -397,17 +397,17 @@ export default function ResolutionCleanerPage() {
                       {">"}
                     </Button>
                   </div>
-                  <p className="mt-1 text-[10px] uppercase tracking-wide text-gray-500">Current field</p>
-                  <p className="mt-0.5 line-clamp-2 break-words text-sm font-semibold text-gray-100">
+                  <p className="mt-1 text-[10px] uppercase tracking-wide text-slate-500">Current field</p>
+                  <p className="mt-0.5 line-clamp-2 break-words text-sm font-semibold text-slate-900">
                     {activeGroup ? activeGroup.detected_value_raw : "Select a value from the list below"}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-gray-500">
+                  <p className="mt-0.5 text-[11px] text-slate-500">
                     Mention {Math.min(sync.activeOccurrenceIndex + 1, Math.max(1, activeOccurrenceTotal))} of{" "}
                     {Math.max(1, activeOccurrenceTotal)}
                   </p>
                 </div>
 
-                <p className="text-[10px] text-gray-500">
+                <p className="text-[10px] text-slate-500">
                   Navigation order follows document position (top to bottom).
                 </p>
 
@@ -421,7 +421,7 @@ export default function ResolutionCleanerPage() {
                   >
                     {replacement.isReplacing ? "Applying…" : `Apply All Confirmed (${groups.confirmedCount})`}
                   </Button>
-                  <p className="text-[11px] text-gray-500">
+                  <p className="text-[11px] text-slate-500">
                     We only replace exact confirmed text and preserve literal values.
                   </p>
                 </div>
@@ -466,15 +466,15 @@ export default function ResolutionCleanerPage() {
                 />
 
                 {replacement.error ? (
-                  <Card className="border-red-800/50 bg-red-950/20">
-                    <p className="text-sm text-red-300">{replacement.error}</p>
+                  <Card className="border-red-200 bg-red-50">
+                    <p className="text-sm text-red-700">{replacement.error}</p>
                   </Card>
                 ) : null}
               </div>
 
               {feedback ? (
-                <div className="fixed left-1/2 top-4 z-50 flex min-h-[44px] -translate-x-1/2 items-center gap-2 rounded-lg border border-green-800 bg-green-900/90 px-4 py-3 text-sm text-green-100 shadow-xl backdrop-blur-sm animate-in fade-in slide-in-from-top-2 md:left-auto md:right-6 md:top-6 md:translate-x-0">
-                  <CheckCircle2 className="h-4 w-4 text-green-400" />
+                <div className="fixed left-1/2 top-4 z-50 flex min-h-[44px] -translate-x-1/2 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-xl backdrop-blur-sm animate-in fade-in slide-in-from-top-2 md:left-auto md:right-6 md:top-6 md:translate-x-0">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   {feedback}
                 </div>
               ) : null}
@@ -493,9 +493,9 @@ export default function ResolutionCleanerPage() {
       {/* ── Step: complete ───────────────────────────────────── */}
       {isCompleteMode ? (
         <div className="max-w-3xl space-y-5">
-          <Card className="space-y-3 border-green-800/40 bg-green-950/10">
-            <p className="text-sm font-medium text-green-300">Complete</p>
-            <p className="text-sm text-gray-300">
+          <Card className="space-y-3 border-emerald-200 bg-emerald-50/60">
+            <p className="text-sm font-medium text-emerald-700">Complete</p>
+            <p className="text-sm text-slate-700">
               {upload.parseResult?.fileName?.replace(".docx", "_updated.docx")}
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">

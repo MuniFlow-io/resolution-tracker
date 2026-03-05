@@ -30,9 +30,9 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-slate-600">
         Will replace{" "}
-        <span className="font-medium text-white">
+        <span className="font-medium text-slate-900">
           {activeCount} {activeCount === 1 ? "occurrence" : "occurrences"}
         </span>
       </p>
@@ -40,7 +40,7 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
       <div className="space-y-1.5">
         <label
           htmlFor={`replacement-${group.group_id}`}
-          className="text-xs text-gray-400"
+          className="text-xs text-slate-600"
         >
           Replace with
         </label>
@@ -63,7 +63,7 @@ export function ReplaceForm({ group, onCancel, onConfirm }: ReplaceFormProps) {
           placeholder="Enter the new value"
         />
         {error ? (
-          <p role="alert" className="text-xs text-red-400">
+          <p role="alert" className="text-xs text-red-600">
             {error}
           </p>
         ) : null}
