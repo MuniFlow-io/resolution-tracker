@@ -8,11 +8,11 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantClasses: Record<BadgeVariant, string> = {
-  neutral: "border border-slate-300 bg-slate-100 text-slate-700",
-  success: "border border-emerald-200 bg-emerald-50 text-emerald-700",
-  warning: "border border-amber-200 bg-amber-50 text-amber-700",
-  error: "border border-red-200 bg-red-50 text-red-700",
-  locked: "border border-primary-200 bg-primary-50 text-primary-700",
+  neutral: "border border-slate-400 bg-slate-100 text-slate-700",
+  success: "border border-emerald-300 bg-emerald-100 text-emerald-800",
+  warning: "border border-amber-300 bg-amber-100 text-amber-800",
+  error: "border border-red-300 bg-red-100 text-red-800",
+  locked: "border border-primary-300 bg-primary-100 text-primary-800",
 };
 
 export function Badge({ className, variant = "neutral", ...props }: BadgeProps) {

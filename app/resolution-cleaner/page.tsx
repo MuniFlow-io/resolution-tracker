@@ -331,8 +331,8 @@ export default function ResolutionCleanerPage() {
 
             {/* Right workspace viewport: fixed-height stack (controls + scrollable terms list). */}
             <div className="space-y-3 lg:sticky lg:top-1 lg:flex lg:h-[calc(100vh-88px)] lg:flex-col lg:space-y-3 lg:overflow-hidden">
-              <Card className="space-y-1.5 p-2.5 sm:p-3 lg:shrink-0 lg:space-y-1.5">
-                <div className="space-y-0.5 border-b border-slate-200 pb-1.5">
+              <Card className="space-y-1.5 border-2 border-slate-400 p-2.5 shadow-md sm:p-3 lg:shrink-0 lg:space-y-1.5">
+                <div className="space-y-0.5 border-b border-slate-300 pb-1.5">
                   <p className="truncate text-xs font-semibold uppercase tracking-wide text-slate-700">
                     {upload.parseResult!.fileName}
                   </p>
@@ -343,14 +343,14 @@ export default function ResolutionCleanerPage() {
 
                 <div className="space-y-1">
                   <span className="text-[11px] font-medium text-slate-600">Review Mode</span>
-                  <div className="grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1">
+                  <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1">
                     <button
                       type="button"
                       onClick={() => setViewMode("document")}
                       className={`min-h-[44px] rounded px-2.5 py-1.5 text-xs font-medium transition-colors lg:min-h-[36px] ${
                         viewMode === "document"
-                          ? "border border-slate-300 bg-white text-slate-900 shadow-sm"
-                          : "text-slate-600 hover:text-slate-800"
+                          ? "border border-slate-400 bg-white text-slate-900 shadow-sm"
+                          : "text-slate-700 hover:bg-white hover:text-slate-900"
                       }`}
                     >
                       Document Order
@@ -360,8 +360,8 @@ export default function ResolutionCleanerPage() {
                       onClick={() => setViewMode("grouped")}
                       className={`min-h-[44px] rounded px-2.5 py-1.5 text-xs font-medium transition-colors lg:min-h-[36px] ${
                         viewMode === "grouped"
-                          ? "border border-slate-300 bg-white text-slate-900 shadow-sm"
-                          : "text-slate-600 hover:text-slate-800"
+                          ? "border border-slate-400 bg-white text-slate-900 shadow-sm"
+                          : "text-slate-700 hover:bg-white hover:text-slate-900"
                       }`}
                     >
                       Grouped
@@ -369,7 +369,7 @@ export default function ResolutionCleanerPage() {
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5 text-center">
+                <div className="rounded-lg border-2 border-slate-300 bg-slate-50 p-1.5 text-center">
                   <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
                     <Button
                       variant="ghost"
@@ -397,17 +397,17 @@ export default function ResolutionCleanerPage() {
                       {">"}
                     </Button>
                   </div>
-                  <p className="mt-1 text-[10px] uppercase tracking-wide text-slate-500">Current field</p>
+                  <p className="mt-1 text-[10px] uppercase tracking-wide text-slate-600">Current field</p>
                   <p className="mt-0.5 line-clamp-2 break-words text-sm font-semibold text-slate-900">
                     {activeGroup ? activeGroup.detected_value_raw : "Select a value from the list below"}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-slate-500">
+                  <p className="mt-0.5 text-[11px] text-slate-600">
                     Mention {Math.min(sync.activeOccurrenceIndex + 1, Math.max(1, activeOccurrenceTotal))} of{" "}
                     {Math.max(1, activeOccurrenceTotal)}
                   </p>
                 </div>
 
-                <p className="text-[10px] text-slate-500">
+                <p className="text-[10px] text-slate-600">
                   Navigation order follows document position (top to bottom).
                 </p>
 
@@ -421,7 +421,7 @@ export default function ResolutionCleanerPage() {
                   >
                     {replacement.isReplacing ? "Applying…" : `Apply All Confirmed (${groups.confirmedCount})`}
                   </Button>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-slate-600">
                     We only replace exact confirmed text and preserve literal values.
                   </p>
                 </div>
@@ -429,7 +429,7 @@ export default function ResolutionCleanerPage() {
 
               <div
                 ref={listContainerRef}
-                className="space-y-2 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:scroll-pb-6 lg:scroll-pt-3 lg:pr-1"
+                className="space-y-2 rounded-xl border border-slate-300 bg-white p-2 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:scroll-pb-6 lg:scroll-pt-3 lg:pr-1"
               >
                 <VariableGroupList
                   groups={groups.groups}
@@ -466,15 +466,15 @@ export default function ResolutionCleanerPage() {
                 />
 
                 {replacement.error ? (
-                  <Card className="border-red-200 bg-red-50">
+                  <Card className="border-red-300 bg-red-100">
                     <p className="text-sm text-red-700">{replacement.error}</p>
                   </Card>
                 ) : null}
               </div>
 
               {feedback ? (
-                <div className="fixed left-1/2 top-4 z-50 flex min-h-[44px] -translate-x-1/2 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-xl backdrop-blur-sm animate-in fade-in slide-in-from-top-2 md:left-auto md:right-6 md:top-6 md:translate-x-0">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <div className="fixed left-1/2 top-4 z-50 flex min-h-[44px] -translate-x-1/2 items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-100 px-4 py-3 text-sm text-emerald-900 shadow-xl backdrop-blur-sm animate-in fade-in slide-in-from-top-2 md:left-auto md:right-6 md:top-6 md:translate-x-0">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-700" />
                   {feedback}
                 </div>
               ) : null}

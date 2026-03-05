@@ -17,7 +17,7 @@ export function ToolCard({ title, description, status, href }: ToolCardProps) {
     <Card
       className={cn(
         "space-y-4",
-        isExternal ? "border-slate-200 bg-slate-50/70 opacity-90" : "border-primary-100",
+        isExternal ? "border-slate-300 bg-slate-50/70 opacity-90" : "border-2 border-primary-300 bg-primary-50/40",
       )}
     >
       <div>

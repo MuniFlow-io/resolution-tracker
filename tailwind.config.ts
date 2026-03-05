@@ -11,10 +11,10 @@ const config: Config = {
     extend: {
       colors: {
         background: {
-          DEFAULT: "#F8FAFC",
+          DEFAULT: "#EEF2F7",
           paper: "#FFFFFF",
           input: "#F1F5F9",
-          subtle: "#F8FAFC",
+          subtle: "#EEF2F7",
           hover: "#F1F5F9",
         },
         foreground: "#1E293B",

@@ -166,16 +166,16 @@ export function VariableGroupList({
             <button
               type="button"
               onClick={() => onToggleSection(type)}
-              className="flex w-full items-center justify-between rounded-md px-1 py-1 text-left transition-colors hover:bg-slate-100"
+              className="flex w-full items-center justify-between rounded-lg border border-slate-300 bg-secondary-50 px-2 py-1.5 text-left transition-colors hover:bg-secondary-100"
               aria-expanded={!collapsed}
             >
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-700">
                 {LABELS[type]} ({sectionGroups.length})
               </h2>
               {collapsed ? (
-                <ChevronRight className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                <ChevronRight className="h-4 w-4 text-slate-600" aria-hidden="true" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                <ChevronDown className="h-4 w-4 text-slate-600" aria-hidden="true" />
               )}
             </button>
 

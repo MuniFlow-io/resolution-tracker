@@ -23,10 +23,10 @@ interface VariableGroupRowProps {
 }
 
 function rowClass(group: VariableGroupState): string {
-  if (group.is_locked) return "border-amber-200 bg-amber-50";
-  if (group.action === "done") return "border-emerald-200 bg-emerald-50";
-  if (group.action === "ignored") return "border-slate-200 bg-slate-50 opacity-70";
-  return "border-slate-200 bg-white";
+  if (group.is_locked) return "border-amber-300 bg-amber-50 border-l-4 border-l-amber-500";
+  if (group.action === "done") return "border-emerald-300 bg-emerald-50 border-l-4 border-l-emerald-500";
+  if (group.action === "ignored") return "border-slate-300 bg-slate-50 border-l-4 border-l-slate-400 opacity-75";
+  return "border-slate-300 bg-white border-l-4 border-l-secondary-600";
 }
 
 export function VariableGroupRow({
@@ -45,9 +45,9 @@ export function VariableGroupRow({
     <Card
       id={`group-${group.group_id}`}
       className={cn(
-        "p-3 transition-shadow",
+        "p-3 transition-shadow hover:shadow-md",
         rowClass(group),
-        isActive && "border-yellow-400 ring-1 ring-inset ring-yellow-300 bg-yellow-50",
+        isActive && "border-yellow-400 ring-1 ring-inset ring-yellow-400/70 bg-yellow-50",
       )}
     >
       {/* ── Header row ─────────────────────────────────── */}

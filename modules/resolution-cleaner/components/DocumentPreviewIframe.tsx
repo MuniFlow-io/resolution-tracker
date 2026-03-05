@@ -169,9 +169,9 @@ export function DocumentPreviewIframe({
   return (
     <Card className="flex h-full min-h-[600px] flex-col overflow-hidden p-0">
       {/* Disclaimer Bar */}
-      <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
-        <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
-        <p className="text-xs text-slate-700">
+      <div className="flex items-center gap-2 border-b border-secondary-300 bg-secondary-50 px-4 py-3">
+        <AlertCircle className="h-4 w-4 shrink-0 text-secondary-800" aria-hidden="true" />
+        <p className="text-xs text-slate-800">
           <strong className="text-slate-900">Preview formatting is approximate.</strong>{" "}
           Your downloaded .docx will retain 100% of its original layout and styling.
         </p>

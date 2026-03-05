@@ -47,9 +47,9 @@ export function UploadZone({ onFileSelected, error }: UploadZoneProps) {
           className={cn(
             "flex min-h-48 w-full flex-col items-center justify-center border-2 border-dashed text-center",
             isDragging
-              ? "border-primary-300 bg-primary-50"
-              : "border-slate-300 hover:border-primary-300",
-            error && "border-red-300 bg-red-50",
+              ? "border-primary-500 bg-primary-50"
+              : "border-slate-400 hover:border-primary-400",
+            error && "border-red-400 bg-red-50",
           )}
         >
           <Upload className="h-10 w-10 text-slate-500" aria-hidden="true" />

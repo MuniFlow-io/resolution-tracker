@@ -100,12 +100,12 @@ function ContextBlock({
   excluded: boolean;
 }) {
   return (
-    <div className="rounded-md border border-slate-300 bg-slate-50 p-2 text-[11px] leading-relaxed text-slate-700">
+    <div className="rounded-md border border-slate-400 bg-slate-50 p-2 text-[11px] leading-relaxed text-slate-700">
       <span>{occurrence.context_before}</span>
       {excluded ? (
         <span className="line-through text-slate-500">{occurrence.match_text}</span>
       ) : (
-        <mark className="rounded bg-yellow-200 px-0.5 text-yellow-900 not-italic">
+        <mark className="rounded bg-yellow-300 px-0.5 text-yellow-950 not-italic">
           {occurrence.match_text}
         </mark>
       )}
